@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三菱湖环境管理平台</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(180deg, #0F3460 0%, #16213E 50%, #0A192F 100%);
+      min-height: 100vh;
+      color: white;
+    }
+
+    .header {
+      background: linear-gradient(90deg, #1A3A6C, #0F2A4D);
+      border-bottom: 2px solid #2A5A9A;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: #9CC4FF;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .logout-btn:hover {
+      color: white;
+    }
+
+    .nav-tabs {
+      display: flex;
+      padding: 0 24px;
+    }
+
+    .nav-tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      color: #9CC4FF;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-tab:hover {
+      color: white;
+    }
+
+    .nav-tab.active {
+      background: white;
+      color: #1A3A6C;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .main-container {
+      display: flex;
+      height: calc(100vh - 110px);
+    }
+
+    .sidebar {
+      width: 320px;
+      border-right: 1px solid #2A5A9A;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      padding: 14px 20px;
+      border-bottom: 1px solid #2A5A9A;
+      font-size: 14px;
+      font-weight: 600;
+      color: #9CC4FF;
+      border-left: 4px solid #4A90E2;
+    }
+
+    .stat-card {
+      margin: 16px;
+      padding: 16px;
+      background: rgba(42, 90, 154, 0.2);
+      border: 1px solid #2A5A9A;
+      border-radius: 8px;
+    }
+
+    .stat-table {
+      width: 100%;
+      font-size: 14px;
+    }
+
+    .stat-table th {
+      text-align: left;
+      color: #9CC4FF;
+      padding-bottom: 12px;
+    }
+
+    .stat-table td {
+      padding: 8px 0;
+      border-top: 1px solid #2A5A9A;
+    }
+
+    .stat-table td:last-child {
+      text-align: right;
+    }
+
+    .station-list {
+      padding: 0 16px 16px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .station-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(42, 90, 154, 0.15);
+      border: 1px solid #2A5A9A;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .station-item:hover {
+      background: rgba(42, 90, 154, 0.4);
+      border-color: #4A90E2;
+    }
+
+    .station-item.active {
+      background: rgba(74, 144, 226, 0.3);
+      border-color: #4A90E2;
+      box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+    }
+
+
+
+    .station-icon {
+      font-size: 18px;
+    }
+
+    .station-name {
+      font-size: 14px;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #9CC4FF;
+      border-left: 4px solid #4A90E2;
+      padding-left: 10px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .data-card {
+      background: linear-gradient(135deg, rgba(42, 90, 154, 0.4), rgba(26, 58, 108, 0.4));
+      border: 1px solid #4A90E2;
+      border-radius: 8px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .data-card.hidden {
+      opacity: 0.5;
+      background: rgba(100, 100, 100, 0.2);
+    }
+
+    .data-label {
+      font-size: 14px;
+      color: #9CC4FF;
+      margin-bottom: 8px;
+    }
+
+    .data-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4ADE80;
+      margin-bottom: 6px;
+      transition: all 0.3s;
+    }
+
+    .data-value.hidden {
+      color: #9CA3AF;
+    }
+
+    .data-standard {
+      font-size: 13px;
+      color: #7CB3F0;
+    }
+
+    .alarm-panel {
+      background: rgba(42, 90, 154, 0.15);
+      border: 1px solid #2A5A9A;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .alarm-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      font-size: 14px;
+      color: #9CC4FF;
+      margin-bottom: 8px;
+    }
+
+    .status-panel {
+      width: 320px;
+      border-left: 1px solid #2A5A9A;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 状态模块重新布局：上方2个，下方3个 */
+    .status-grid-top {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 16px 16px 8px 16px;
+    }
+
+    .status-grid-bottom {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 8px 16px 16px 16px;
+    }
+
+    .status-item {
+      text-align: center;
+    }
+
+    .status-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-grid-bottom .status-circle {
+      width: 75px;
+      height: 75px;
+    }
+
+    .status-circle::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%);
+      border-radius: 50%;
+    }
+
+    .status-circle::after {
+      content: '';
+      position: absolute;
+      top: 15%;
+      left: 15%;
+      right: 15%;
+      bottom: 15%;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+    }
+
+    .status-circle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    }
+
+    .status-count {
+      font-size: 36px;
+      font-weight: bold;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-grid-bottom .status-count {
+      font-size: 26px;
+    }
+
+    .status-label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 4px;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .status-circle.offline {
+      background: linear-gradient(135deg, #B8C4CE 0%, #8A99A8 50%, #6B7A8A 100%);
+      border: 3px solid #D0D9E0;
+    }
+
+    .status-circle.normal {
+      background: linear-gradient(135deg, #6BEE8A 0%, #3CD65F 50%, #22C55E 100%);
+      border: 3px solid #8BFFA3;
+    }
+
+    .status-circle.warning {
+      background: linear-gradient(135deg, #FFE66D 0%, #FFD43B 50%, #F59E0B 100%);
+      border: 3px solid #FFF09E;
+    }
+
+    .status-circle.exceed {
+      background: linear-gradient(135deg, #FF9A6B 0%, #FB713C 50%, #DC2626 100%);
+      border: 3px solid #FFB89A;
+    }
+
+    .status-circle.fault {
+      background: linear-gradient(135deg, #FF6B6B 0%, #EF4444 50%, #B91C1C 100%);
+      border: 3px solid #FF9A9A;
+    }
+
+    /* 报表导出模块 */
+    .export-section {
+      padding: 0 16px 16px 16px;
+    }
+
+    .year-selector {
+      margin-bottom: 16px;
+    }
+
+    .year-selector label {
+      display: block;
+      font-size: 13px;
+      color: #9CC4FF;
+      margin-bottom: 8px;
+    }
+
+    .year-select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(42, 90, 154, 0.3);
+      border: 1px solid #4A90E2;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .year-select:hover {
+      background: rgba(42, 90, 154, 0.5);
+    }
+
+    .year-select option {
+      background: #1A3A6C;
+      color: white;
+    }
+
+    .month-year-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 12px;
+      background: rgba(42, 90, 154, 0.2);
+      border: 1px solid #2A5A9A;
+      border-radius: 6px;
+      color: #9CC4FF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .toggle-btn:hover {
+      background: rgba(42, 90, 154, 0.4);
+    }
+
+    .toggle-btn.active {
+      background: rgba(74, 144, 226, 0.4);
+      border-color: #4A90E2;
+      color: white;
+    }
+
+    .toggle-btn .excel-tag {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: #21A366;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    .toggle-btn .icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .month-selector {
+      margin-bottom: 16px;
+    }
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    .month-btn {
+      padding: 8px;
+      background: rgba(42, 90, 154, 0.2);
+      border: 1px solid #2A5A9A;
+      border-radius: 4px;
+      color: #9CC4FF;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .month-btn:hover {
+      background: rgba(42, 90, 154, 0.4);
+    }
+
+    .month-btn.active {
+      background: rgba(74, 144, 226, 0.4);
+      border-color: #4A90E2;
+      color: white;
+    }
+
+    .export-btn-final {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4A90E2 0%, #2A7CC7 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .export-btn-final:hover {
+      background: linear-gradient(135deg, #5A9FF2 0%, #3A8CD7 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 12px;
+      color: #7CB3F0;
+      font-size: 13px;
+      border-top: 1px solid #2A5A9A;
+      background: rgba(10, 25, 47, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-area">
+        <div class="logo-icon">🌍</div>
+        <div class="logo-text">三菱湖环境管理平台</div>
+      </div>
+      <div class="header-right">
+        <div class="user-info">
+          <div class="user-avatar">👤</div>
+          <span>admin</span>
+          <button class="logout-btn" onclick="window.location.href='login.html'">退出</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active">环境监测</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="panel-title">监测站点统计</div>
+      <div class="stat-card">
+        <table class="stat-table">
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>站点类型</th>
+              <th>数量</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>水环境监测</td>
+              <td>10</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel-title">监测站点列表</div>
+      <div class="station-list" id="stationList">
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div class="section-header">
+        <div class="section-title" id="currentStationTitle">实时数据 - 三菱湖渔场1号机柜 上次更新时间: 2026-05-18 16:34:17</div>
+      </div>
+      <div class="data-grid" id="dataGrid">
+      </div>
+      <div class="section-header">
+        <div class="section-title">异常数据播报(48小时)</div>
+      </div>
+      <div class="alarm-panel">
+        <div class="alarm-header">
+          <div>报警类别</div>
+          <div>报警内容</div>
+          <div>报警时间</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-panel">
+      <div class="panel-title">站点实时状态 (30s刷新一次)</div>
+      
+      <!-- 上方2个状态模块 -->
+      <div class="status-grid-top">
+        <div class="status-item">
+          <div class="status-circle offline">
+            <div class="status-count">0</div>
+            <div class="status-label">离线</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-circle normal" id="normalCount">
+            <div class="status-count">9</div>
+            <div class="status-label">正常</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 下方3个状态模块 -->
+      <div class="status-grid-bottom">
+        <div class="status-item">
+          <div class="status-circle warning" id="warningCount">
+            <div class="status-count">1</div>
+            <div class="status-label">预警</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-circle exceed">
+            <div class="status-count">0</div>
+            <div class="status-label">超标</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-circle fault">
+            <div class="status-count">0</div>
+            <div class="status-label">故障</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 报表导出模块 -->
+      <div class="export-section">
+        <div class="panel-title">监测数据报表导出</div>
+        
+        <!-- 年份选择器 -->
+        <div class="year-selector">
+          <label>选择年份</label>
+          <select class="year-select" id="yearSelect">
+          </select>
+        </div>
+        
+        <!-- 月/年切换 -->
+        <div class="month-year-toggle">
+          <button class="toggle-btn active" id="monthToggle" onclick="setExportMode('month')">
+            <span class="excel-tag">Excel</span>
+            <span class="icon">📅</span>
+            月报表
+          </button>
+          <button class="toggle-btn" id="yearToggle" onclick="setExportMode('year')">
+            <span class="excel-tag">Excel</span>
+            <span class="icon">📆</span>
+            年报表
+          </button>
+        </div>
+        
+        <!-- 月份选择器（仅在月模式显示） -->
+        <div class="month-selector" id="monthSelector">
+          <div class="month-grid">
+            <button class="month-btn" data-month="1">1月</button>
+            <button class="month-btn" data-month="2">2月</button>
+            <button class="month-btn" data-month="3">3月</button>
+            <button class="month-btn" data-month="4">4月</button>
+            <button class="month-btn" data-month="5">5月</button>
+            <button class="month-btn" data-month="6">6月</button>
+            <button class="month-btn" data-month="7">7月</button>
+            <button class="month-btn" data-month="8">8月</button>
+            <button class="month-btn" data-month="9">9月</button>
+            <button class="month-btn" data-month="10">10月</button>
+            <button class="month-btn" data-month="11">11月</button>
+            <button class="month-btn" data-month="12">12月</button>
+          </div>
+        </div>
+        
+        <!-- 导出按钮 -->
+        <button class="export-btn-final" onclick="exportExcel()">导出Excel报表</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Copyright ©2024 武汉奥恒盛科技
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const stations = [
+      '三菱湖渔场1号机柜',
+      '三菱湖渔场2号机柜',
+      '三菱湖渔场3号机柜',
+      '三菱湖渔场4号机柜',
+      '三菱湖渔场5号机柜',
+      '三菱湖渔场6号机柜',
+      '三菱湖渔场7号机柜',
+      '三菱湖渔场8号机柜',
+      '三菱湖渔场9号机柜',
+      '三菱湖渔场10号机柜'
+    ];
+
+    const dataConfig = {
+      '溶解氧': { min: 3, max: 12, unit: 'mg/L' },
+      '化学需氧量': { min: 0, max: 100, unit: 'mg/L' },
+      '氨氮': { min: 0, max: 1, unit: 'mg/L' },
+      '总磷': { min: 0, max: 1, unit: 'mg/L' }
+    };
+
+    let currentStationIndex = 0;
+    let stationData = {};
+    let warningStations = [];
+    let lastWarningUpdate = null;
+    let exportMode = 'month';
+    let selectedMonth = new Date().getMonth() + 1;
+
+    function generateRandomValue(min, max) {
+      const val = min + Math.random() * (max - min);
+      // 根据示例数据，保留适当的小数位
+      if (max - min > 10) {
+        return Math.round(val * 10000) / 10000; // 4位小数
+      } else {
+        return Math.round(val * 1000) / 1000; // 3位小数
+      }
+    }
+
+    function initializeStationData() {
+      stations.forEach((station, index) => {
+        stationData[station] = {
+          '溶解氧': generateRandomValue(3, 12),
+          '化学需氧量': generateRandomValue(0, 100),
+          '氨氮': generateRandomValue(0, 1),
+          '总磷': generateRandomValue(0, 1)
+        };
+      });
+    }
+
+    function updateWarningStations() {
+      const now = new Date();
+      const today = now.toDateString();
+      
+      if (lastWarningUpdate !== today) {
+        const warningCount = Math.floor(Math.random() * 2) + 1;
+        const shuffled = [...stations].sort(() => Math.random() - 0.5);
+        warningStations = shuffled.slice(0, warningCount);
+        lastWarningUpdate = today;
+        
+        document.getElementById('normalCount').querySelector('.status-count').textContent = 10 - warningCount;
+        document.getElementById('warningCount').querySelector('.status-count').textContent = warningCount;
+      }
+    }
+
+    function renderStationList() {
+      const stationListEl = document.getElementById('stationList');
+      stationListEl.innerHTML = stations.map((station, index) => {
+        const isActive = index === currentStationIndex;
+        return `
+          <div class="station-item ${isActive ? 'active' : ''}" data-index="${index}">
+            <span class="station-icon">🏢</span>
+            <span class="station-name">${station}</span>
+          </div>
+        `;
+      }).join('');
+
+      stationListEl.querySelectorAll('.station-item').forEach(item => {
+        item.addEventListener('click', () => {
+          currentStationIndex = parseInt(item.dataset.index);
+          updateDisplay();
+          renderStationList();
+        });
+      });
+    }
+
+    function updateDisplay() {
+      const currentStation = stations[currentStationIndex];
+      const data = stationData[currentStation];
+      const isWarning = warningStations.includes(currentStation);
+      
+      const now = new Date();
+      const timeStr = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/\//g, '-');
+
+      document.getElementById('currentStationTitle').innerHTML = 
+        `实时数据 - ${currentStation} 上次更新时间: ${timeStr}`;
+
+      const dataGridEl = document.getElementById('dataGrid');
+      
+      if (isWarning) {
+        dataGridEl.innerHTML = Object.keys(dataConfig).map(key => `
+          <div class="data-card hidden">
+            <div class="data-label">【${key}】</div>
+            <div class="data-value hidden">数据无法正常显示</div>
+            <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
+          </div>
+        `).join('');
+      } else {
+        dataGridEl.innerHTML = Object.keys(dataConfig).map(key => `
+          <div class="data-card">
+            <div class="data-label">【${key}】</div>
+            <div class="data-value">实时数据: ${data[key]}${dataConfig[key].unit}</div>
+            <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function updateAllStationData() {
+      stations.forEach(station => {
+        if (!warningStations.includes(station)) {
+          Object.keys(dataConfig).forEach(key => {
+            const config = dataConfig[key];
+            const currentValue = parseFloat(stationData[station][key]);
+            const change = (Math.random() - 0.5) * (config.max - config.min) * 0.1;
+            let newValue = currentValue + change;
+            
+            if (newValue < config.min) newValue = config.min;
+            if (newValue > config.max) newValue = config.max;
+            
+            stationData[station][key] = newValue.toFixed(3);
+          });
+        }
+      });
+      updateDisplay();
+    }
+
+    // 年份选择器初始化
+    function initializeYearSelector() {
+      const yearSelect = document.getElementById('yearSelect');
+      const currentYear = new Date().getFullYear();
+      const startYear = 2020;
+      
+      for (let year = currentYear; year >= startYear; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year + '年';
+        yearSelect.appendChild(option);
+      }
+    }
+
+    // 切换月/年模式
+    function setExportMode(mode) {
+      exportMode = mode;
+      document.getElementById('monthToggle').classList.toggle('active', mode === 'month');
+      document.getElementById('yearToggle').classList.toggle('active', mode === 'year');
+      document.getElementById('monthSelector').style.display = mode === 'month' ? 'block' : 'none';
+    }
+
+    // 初始化月份选择
+    function initializeMonthSelector() {
+      const monthBtns = document.querySelectorAll('.month-btn');
+      monthBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          monthBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          selectedMonth = parseInt(btn.dataset.month);
+        });
+      });
+      
+      // 默认选中当前月
+      const currentMonthBtn = document.querySelector(`.month-btn[data-month="${selectedMonth}"]`);
+      if (currentMonthBtn) currentMonthBtn.classList.add('active');
+    }
+
+    // 生成历史数据
+    function generateHistoricalData(year, month, station, isWarning) {
+      const data = [];
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      // 如果是预警站点，返回全部为空的数据
+      if (isWarning) {
+        const monthsToGenerate = exportMode === 'month' ? 1 : 12;
+        for (let m = 1; m <= monthsToGenerate; m++) {
+          const targetMonth = exportMode === 'month' ? month : m;
+          data.push({
+            '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
+            '溶解氧': '-',
+            '化学需氧量': '-',
+            '氨氮': '-',
+            '总磷': '-',
+            'pH值': '-'
+          });
+        }
+        return data;
+      }
+      
+      // 正常站点，生成数据
+      const monthsToGenerate = exportMode === 'month' ? 1 : 12;
+      for (let m = 1; m <= monthsToGenerate; m++) {
+        const targetMonth = exportMode === 'month' ? month : m;
+        const isFutureDate = (year > currentYear) || (year === currentYear && targetMonth > currentMonth);
+        
+        if (isFutureDate) {
+          // 未来月份显示为空
+          data.push({
+            '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
+            '溶解氧': '-',
+            '化学需氧量': '-',
+            '氨氮': '-',
+            '总磷': '-',
+            'pH值': '-'
+          });
+        } else {
+          // 过去和当前月份生成随机数据
+          data.push({
+            '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
+            '溶解氧': generateRandomValue(3, 12),
+            '化学需氧量': generateRandomValue(0, 100),
+            '氨氮': generateRandomValue(0, 1),
+            '总磷': generateRandomValue(0, 1),
+            'pH值': '-'
+          });
+        }
+      }
+      
+      return data;
+    }
+
+    // 计算统计数据
+    function calculateStats(data) {
+      const stats = {
+        max: { '溶解氧': 0, '化学需氧量': 0, '氨氮': 0, '总磷': 0 },
+        min: { '溶解氧': Infinity, '化学需氧量': Infinity, '氨氮': Infinity, '总磷': Infinity },
+        total: { '溶解氧': 0, '化学需氧量': 0, '氨氮': 0, '总磷': 0 },
+        count: 0
+      };
+      
+      data.forEach(row => {
+        if (row['溶解氧'] !== '-') {
+          stats.count++;
+          Object.keys(stats.max).forEach(key => {
+            const val = parseFloat(row[key]);
+            if (!isNaN(val)) {
+              if (val > stats.max[key]) stats.max[key] = val;
+              if (val < stats.min[key]) stats.min[key] = val;
+              stats.total[key] += val;
+            }
+          });
+        }
+      });
+      
+      // 格式化数字，匹配示例中的精度
+      if (stats.count > 0) {
+        Object.keys(stats.max).forEach(key => {
+          if (key === '化学需氧量') {
+            // 化学需氧量是整数或少量小数
+            stats.max[key] = Math.round(stats.max[key]);
+            stats.min[key] = Math.round(stats.min[key]);
+            stats.total[key] = Math.round(stats.total[key] * 10000) / 10000;
+          } else if (key === '总磷') {
+            // 总磷通常小数位较少
+            stats.max[key] = Math.round(stats.max[key] * 1000) / 1000;
+            stats.min[key] = Math.round(stats.min[key] * 1000) / 1000;
+            stats.total[key] = Math.round(stats.total[key] * 1000) / 1000;
+          } else {
+            stats.max[key] = Math.round(stats.max[key] * 10000) / 10000;
+            stats.min[key] = Math.round(stats.min[key] * 10000) / 10000;
+            stats.total[key] = Math.round(stats.total[key] * 10000) / 10000;
+          }
+        });
+      }
+      
+      return stats;
+    }
+
+    // 导出Excel
+    function exportExcel() {
+      const year = parseInt(document.getElementById('yearSelect').value);
+      const currentStation = stations[currentStationIndex];
+      const isWarning = warningStations.includes(currentStation);
+      
+      // 生成数据
+      const historicalData = generateHistoricalData(year, selectedMonth, currentStation, isWarning);
+      
+      // 准备工作表数据
+      const wsData = [];
+      
+      // 表头1：企业名称和站点名称
+      wsData.push(['企业名称：三菱湖渔场', '', '', '站点名称：' + currentStation]);
+      
+      // 表头2：监测时间
+      const timeLabel = exportMode === 'month' 
+        ? `监测时间：${year}年${selectedMonth}月 - ${year}年${selectedMonth}月` 
+        : `监测时间：${year}年1月 - ${year}年12月`;
+      wsData.push([timeLabel, '', '', 'MN号：SHJCEB000005']);
+      
+      // 表头3：第一行 - 指标名称
+      wsData.push(['时间', '溶解氧', '化学需氧量', '氨氮', '总磷', 'PH值']);
+      
+      // 表头4：第二行 - 单位
+      wsData.push(['', '实测(mg/L)', '实测(mg/L)', '实测(mg/L)', '实测(mg/L)', '无量纲']);
+      
+      // 数据行
+      historicalData.forEach(row => {
+        wsData.push([
+          row['时间'],
+          row['溶解氧'],
+          row['化学需氧量'],
+          row['氨氮'],
+          row['总磷'],
+          row['pH值']
+        ]);
+      });
+      
+      // 统计行
+      const stats = calculateStats(historicalData);
+      if (stats.count > 0) {
+        wsData.push(['最大值', stats.max['溶解氧'], stats.max['化学需氧量'], stats.max['氨氮'], stats.max['总磷'], '-']);
+        wsData.push(['最小值', stats.min['溶解氧'], stats.min['化学需氧量'], stats.min['氨氮'], stats.min['总磷'], '-']);
+        wsData.push(['总量', stats.total['溶解氧'], stats.total['化学需氧量'], stats.total['氨氮'], stats.total['总磷'], '-']);
+      }
+      
+      // 创建工作簿
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      
+      // 设置合并单元格（完全匹配示例格式）
+      ws['!merges'] = [
+        // 第1行：企业名称和站点名称合并
+        { s: { c: 0, r: 0 }, e: { c: 2, r: 0 } },
+        { s: { c: 3, r: 0 }, e: { c: 5, r: 0 } },
+        // 第2行：监测时间和MN号合并
+        { s: { c: 0, r: 1 }, e: { c: 2, r: 1 } },
+        { s: { c: 3, r: 1 }, e: { c: 5, r: 1 } },
+        // 第3-4行：时间和PH值列合并
+        { s: { c: 0, r: 2 }, e: { c: 0, r: 3 } },
+        { s: { c: 5, r: 2 }, e: { c: 5, r: 3 } }
+      ];
+      
+      // 设置列宽
+      ws['!cols'] = [
+        { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 8 }
+      ];
+      
+      const sheetName = exportMode === 'month' 
+        ? `${year}年${selectedMonth}月 - ${year}年${selectedMonth}月月度监测报表` 
+        : `${year}年1月 - ${year}年12月月度监测报表`;
+      
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      
+      // 导出文件
+      const fileName = exportMode === 'month' 
+        ? `${currentStation} - ${year}年月度监测报表.xlsx` 
+        : `${currentStation} - ${year}年月度监测报表.xlsx`;
+      
+      XLSX.writeFile(wb, fileName);
+    }
+
+    initializeStationData();
+    updateWarningStations();
+    renderStationList();
+    updateDisplay();
+    initializeYearSelector();
+    initializeMonthSelector();
+
+    setInterval(updateAllStationData, 86400000);
+    setInterval(updateWarningStations, 86400000);
+  </script>
+</body>
+</html>

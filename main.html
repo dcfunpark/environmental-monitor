@@ -1,0 +1,558 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;三菱湖环境管理平台&lt;/title&gt;
+  &lt;style&gt;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(180deg, #0F3460 0%, #16213E 50%, #0A192F 100%);
+      min-height: 100vh;
+      color: white;
+    }
+
+    .header {
+      background: linear-gradient(90deg, #1A3A6C, #0F2A4D);
+      border-bottom: 2px solid #2A5A9A;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: #9CC4FF;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .logout-btn:hover {
+      color: white;
+    }
+
+    .nav-tabs {
+      display: flex;
+      padding: 0 24px;
+    }
+
+    .nav-tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      color: #9CC4FF;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-tab:hover {
+      color: white;
+    }
+
+    .nav-tab.active {
+      background: white;
+      color: #1A3A6C;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .main-container {
+      display: flex;
+      height: calc(100vh - 110px);
+    }
+
+    .sidebar {
+      width: 320px;
+      border-right: 1px solid #2A5A9A;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      padding: 14px 20px;
+      border-bottom: 1px solid #2A5A9A;
+      font-size: 14px;
+      font-weight: 600;
+      color: #9CC4FF;
+      border-left: 4px solid #4A90E2;
+    }
+
+    .stat-card {
+      margin: 16px;
+      padding: 16px;
+      background: rgba(42, 90, 154, 0.2);
+      border: 1px solid #2A5A9A;
+      border-radius: 8px;
+    }
+
+    .stat-table {
+      width: 100%;
+      font-size: 14px;
+    }
+
+    .stat-table th {
+      text-align: left;
+      color: #9CC4FF;
+      padding-bottom: 12px;
+    }
+
+    .stat-table td {
+      padding: 8px 0;
+      border-top: 1px solid #2A5A9A;
+    }
+
+    .stat-table td:last-child {
+      text-align: right;
+    }
+
+    .station-list {
+      padding: 0 16px 16px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .station-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(42, 90, 154, 0.15);
+      border: 1px solid #2A5A9A;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .station-item:hover {
+      background: rgba(42, 90, 154, 0.3);
+    }
+
+    .station-icon {
+      font-size: 18px;
+    }
+
+    .station-name {
+      font-size: 14px;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #9CC4FF;
+      border-left: 4px solid #4A90E2;
+      padding-left: 10px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .data-card {
+      background: linear-gradient(135deg, rgba(42, 90, 154, 0.4), rgba(26, 58, 108, 0.4));
+      border: 1px solid #4A90E2;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .data-label {
+      font-size: 14px;
+      color: #9CC4FF;
+      margin-bottom: 8px;
+    }
+
+    .data-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4ADE80;
+      margin-bottom: 6px;
+    }
+
+    .data-standard {
+      font-size: 13px;
+      color: #7CB3F0;
+    }
+
+    .alarm-panel {
+      background: rgba(42, 90, 154, 0.15);
+      border: 1px solid #2A5A9A;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .alarm-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      font-size: 14px;
+      color: #9CC4FF;
+      margin-bottom: 8px;
+    }
+
+    .status-panel {
+      width: 320px;
+      border-left: 1px solid #2A5A9A;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .status-circle {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .status-count {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .status-label {
+      font-size: 13px;
+    }
+
+    .status-item {
+      text-align: center;
+    }
+
+    .export-section {
+      padding: 0 16px;
+    }
+
+    .export-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .export-btn {
+      position: relative;
+      background: rgba(42, 90, 154, 0.2);
+      border: 1px solid #2A5A9A;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .export-btn:hover {
+      background: rgba(42, 90, 154, 0.3);
+    }
+
+    .export-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .export-text {
+      font-size: 14px;
+    }
+
+    .excel-tag {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #21A366;
+      color: white;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .year-display {
+      text-align: center;
+      color: #9CC4FF;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 12px;
+      color: #7CB3F0;
+      font-size: 13px;
+      border-top: 1px solid #2A5A9A;
+      background: rgba(10, 25, 47, 0.5);
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class="header"&gt;
+    &lt;div class="header-top"&gt;
+      &lt;div class="logo-area"&gt;
+        &lt;div class="logo-icon"&gt;🌍&lt;/div&gt;
+        &lt;div class="logo-text"&gt;三菱湖环境管理平台&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="header-right"&gt;
+        &lt;button class="icon-btn"&gt;🔍&lt;/button&gt;
+        &lt;button class="icon-btn"&gt;🔔&lt;/button&gt;
+        &lt;button class="icon-btn"&gt;⬇&lt;/button&gt;
+        &lt;div class="user-info"&gt;
+          &lt;div class="user-avatar"&gt;👤&lt;/div&gt;
+          &lt;span&gt;admin&lt;/span&gt;
+          &lt;button class="logout-btn" onclick="window.location.href='index.html'"&gt;退出&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="nav-tabs"&gt;
+      &lt;button class="nav-tab"&gt;首页&lt;/button&gt;
+      &lt;button class="nav-tab active"&gt;环境监测&lt;/button&gt;
+      &lt;button class="nav-tab"&gt;运维服务&lt;/button&gt;
+      &lt;button class="nav-tab"&gt;数据中心&lt;/button&gt;
+      &lt;button class="nav-tab"&gt;预报预警&lt;/button&gt;
+      &lt;button class="nav-tab"&gt;环保档案&lt;/button&gt;
+      &lt;button class="nav-tab"&gt;系统管理&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="main-container"&gt;
+    &lt;div class="sidebar"&gt;
+      &lt;div class="panel-title"&gt;监测站点统计&lt;/div&gt;
+      &lt;div class="stat-card"&gt;
+        &lt;table class="stat-table"&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;序号&lt;/th&gt;
+              &lt;th&gt;站点类型&lt;/th&gt;
+              &lt;th&gt;数量&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;
+              &lt;td&gt;1&lt;/td&gt;
+              &lt;td&gt;水环境监测&lt;/td&gt;
+              &lt;td&gt;10&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+      &lt;div class="panel-title"&gt;监测站点列表&lt;/div&gt;
+      &lt;div class="station-list"&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场5号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场10号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场8号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场6号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场9号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场7号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场4号机柜&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="station-item"&gt;
+          &lt;span class="station-icon"&gt;🏢&lt;/span&gt;
+          &lt;span class="station-name"&gt;三菱湖渔场1号机柜&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="content-area"&gt;
+      &lt;div class="section-header"&gt;
+        &lt;div class="section-title"&gt;实时数据 上次更新时间: 2026-05-16 16:34:17&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="data-grid"&gt;
+        &lt;div class="data-card"&gt;
+          &lt;div class="data-label"&gt;【溶解氧】&lt;/div&gt;
+          &lt;div class="data-value"&gt;实时数据: 6.95mg/L&lt;/div&gt;
+          &lt;div class="data-standard"&gt;排放标准: 3 - 12&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="data-card"&gt;
+          &lt;div class="data-label"&gt;【化学需氧量】&lt;/div&gt;
+          &lt;div class="data-value"&gt;实时数据: 6mg/L&lt;/div&gt;
+          &lt;div class="data-standard"&gt;排放标准: 0 - 100&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="data-card"&gt;
+          &lt;div class="data-label"&gt;【氨氮】&lt;/div&gt;
+          &lt;div class="data-value"&gt;实时数据: 0.153mg/L&lt;/div&gt;
+          &lt;div class="data-standard"&gt;排放标准: 0 - 1&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="data-card"&gt;
+          &lt;div class="data-label"&gt;【总磷】&lt;/div&gt;
+          &lt;div class="data-value"&gt;实时数据: 0.005mg/L&lt;/div&gt;
+          &lt;div class="data-standard"&gt;排放标准: 0 - 1&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="section-header"&gt;
+        &lt;div class="section-title"&gt;异常数据播报(48小时)&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="alarm-panel"&gt;
+        &lt;div class="alarm-header"&gt;
+          &lt;div&gt;报警类别&lt;/div&gt;
+          &lt;div&gt;报警内容&lt;/div&gt;
+          &lt;div&gt;报警时间&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="status-panel"&gt;
+      &lt;div class="panel-title"&gt;站点实时状态 (30s刷新一次)&lt;/div&gt;
+      &lt;div class="status-grid"&gt;
+        &lt;div class="status-item"&gt;
+          &lt;div class="status-circle" style="background: linear-gradient(135deg, #9CA3AF, #6B7280);"&gt;
+            &lt;div class="status-count"&gt;1&lt;/div&gt;
+            &lt;div class="status-label"&gt;离线&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="status-item"&gt;
+          &lt;div class="status-circle" style="background: linear-gradient(135deg, #4ADE80, #22C55E);"&gt;
+            &lt;div class="status-count"&gt;5&lt;/div&gt;
+            &lt;div class="status-label"&gt;正常&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="status-item"&gt;
+          &lt;div class="status-circle" style="background: linear-gradient(135deg, #FCD34D, #F59E0B);"&gt;
+            &lt;div class="status-count"&gt;3&lt;/div&gt;
+            &lt;div class="status-label"&gt;预警&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="status-item"&gt;
+          &lt;div class="status-circle" style="background: linear-gradient(135deg, #FB923C, #DC2626);"&gt;
+            &lt;div class="status-count"&gt;1&lt;/div&gt;
+            &lt;div class="status-label"&gt;超标&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="status-item" style="grid-column: span 2;"&gt;
+          &lt;div class="status-circle" style="background: linear-gradient(135deg, #EF4444, #B91C1C);"&gt;
+            &lt;div class="status-count"&gt;0&lt;/div&gt;
+            &lt;div class="status-label"&gt;故障&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="export-section"&gt;
+        &lt;div class="panel-title"&gt;监测数据报表导出&lt;/div&gt;
+        &lt;div class="export-buttons"&gt;
+          &lt;div class="export-btn"&gt;
+            &lt;span class="excel-tag"&gt;excel&lt;/span&gt;
+            &lt;div class="export-icon"&gt;📅&lt;/div&gt;
+            &lt;div class="export-text"&gt;月&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="export-btn"&gt;
+            &lt;span class="excel-tag"&gt;excel&lt;/span&gt;
+            &lt;div class="export-icon"&gt;📅&lt;/div&gt;
+            &lt;div class="export-text"&gt;年&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="year-display"&gt;2026&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="footer"&gt;
+    Copyright ©2024 武汉奥恒盛科技
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;

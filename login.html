@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三菱湖环境管理平台 - 登录</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(180deg, #4A90E2 0%, #A8D8F0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 1000px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(135deg, #E8F4FC 0%, #D0E8F8 100%);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+      width: 100%;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 300px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .image-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .right-panel {
+      flex: 1;
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #555;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: #4A90E2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 18px;
+    }
+
+    .captcha-wrapper {
+      display: flex;
+      gap: 12px;
+    }
+
+    .captcha-input {
+      flex: 1;
+    }
+
+    .captcha-btn {
+      padding: 14px 24px;
+      background: linear-gradient(90deg, #4A90E2, #50C878);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: #ccc;
+      color: #888;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+
+    .login-btn.active {
+      background: #4A90E2;
+      color: white;
+    }
+
+    .login-btn.active:hover {
+      background: #357ABD;
+    }
+
+    .agreement {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .agreement a {
+      color: #4A90E2;
+      text-decoration: none;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .copyright {
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column;
+      }
+      .left-panel {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="left-panel">
+      <div class="logo-section">
+        <div class="logo-icon">🌍</div>
+        <div class="logo-text">三菱湖环境管理平台</div>
+      </div>
+      <div class="image-placeholder">
+        <img src="picturelogin.png" alt="环境监测系统">
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2 class="login-title">用户登录</h2>
+      <div class="error-message" id="errorMessage"></div>
+      <form id="loginForm">
+        <div class="form-group">
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" class="form-input" id="username" placeholder="请输入用户名">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" class="form-input" id="password" placeholder="请输入密码">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="captcha-wrapper">
+            <div class="input-wrapper captcha-input">
+              <span class="input-icon">🎯</span>
+              <input type="text" class="form-input" id="captcha" placeholder="请输入验证码">
+            </div>
+            <button type="button" class="captcha-btn" id="captchaBtn" onclick="generateCaptcha()"></button>
+          </div>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">登录</button>
+        <div class="agreement">
+          <input type="checkbox" id="agreeCheck">
+          <label for="agreeCheck">已阅读并同意<a href="#">《软件试用协议》</a></label>
+        </div>
+      </form>
+      <div class="copyright">Copyright ©2024 武汉奥恒盛科技</div>
+    </div>
+  </div>
+
+  <script>
+    let currentCaptcha = '';
+    let currentAnswer = '';
+
+    function generateCaptcha() {
+      const num1 = Math.floor(Math.random() * 10);
+      const num2 = Math.floor(Math.random() * 10);
+      currentAnswer = (num1 * num2).toString();
+      document.getElementById('captchaBtn').textContent = `${num1}×${num2}=?`;
+    }
+
+    function updateLoginButton() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const captcha = document.getElementById('captcha').value;
+      const agreed = document.getElementById('agreeCheck').checked;
+      const btn = document.getElementById('loginBtn');
+
+      if (username && password && captcha && agreed) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const captcha = document.getElementById('captcha').value;
+      const agreed = document.getElementById('agreeCheck').checked;
+      const errorDiv = document.getElementById('errorMessage');
+
+      errorDiv.classList.remove('show');
+
+      if (!agreed) {
+        errorDiv.textContent = '请先阅读并同意《软件试用协议》';
+        errorDiv.classList.add('show');
+        return;
+      }
+
+      if (captcha !== currentAnswer) {
+        errorDiv.textContent = '验证码错误';
+        errorDiv.classList.add('show');
+        generateCaptcha();
+        document.getElementById('captcha').value = '';
+        return;
+      }
+
+      if (username === 'admin' && password === '123456') {
+        window.location.href = 'dashboard.html';
+      } else {
+        errorDiv.textContent = '用户名或密码错误';
+        errorDiv.classList.add('show');
+        generateCaptcha();
+        document.getElementById('captcha').value = '';
+      }
+    });
+
+    document.getElementById('username').addEventListener('input', updateLoginButton);
+    document.getElementById('password').addEventListener('input', updateLoginButton);
+    document.getElementById('captcha').addEventListener('input', updateLoginButton);
+    document.getElementById('agreeCheck').addEventListener('change', updateLoginButton);
+
+    generateCaptcha();
+  </script>
+</body>
+</html>
