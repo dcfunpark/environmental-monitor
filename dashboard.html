@@ -39,12 +39,19 @@
     .logo-icon {
       width: 40px;
       height: 40px;
-      background: #4CAF50;
       border-radius: 50%;
+      border: 2px solid #4CAF50;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      overflow: hidden;
+    }
+    
+    .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
 
     .logo-text {
@@ -67,11 +74,19 @@
     .user-avatar {
       width: 32px;
       height: 32px;
-      background: #4CAF50;
       border-radius: 50%;
+      border: 2px solid #4CAF50;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+    }
+    
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
 
     .logout-btn {
@@ -349,6 +364,37 @@
       border-radius: 50%;
     }
 
+    /* 雷达波纹效果 */
+    .status-circle .radar-wave {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.5);
+      animation: radar-pulse 2s ease-out infinite;
+    }
+
+    .status-circle .radar-wave:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+
+    .status-circle .radar-wave:nth-child(3) {
+      animation-delay: 1s;
+    }
+
+    @keyframes radar-pulse {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+
     .status-circle:hover {
       transform: scale(1.08);
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
@@ -541,18 +587,233 @@
       border-top: 1px solid #2A5A9A;
       background: rgba(10, 25, 47, 0.5);
     }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+      .header-top {
+        padding: 10px 16px;
+      }
+
+      .logo-text {
+        font-size: 16px;
+      }
+
+      .user-info span {
+        display: none;
+      }
+
+      .nav-tabs {
+        padding: 0 16px;
+      }
+
+      .main-container {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #2A5A9A;
+        max-height: 300px;
+      }
+
+      .station-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .station-item {
+        font-size: 12px;
+      }
+
+      .content-area {
+        padding: 12px;
+      }
+
+      .data-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .data-card {
+        padding: 12px;
+      }
+
+      .data-label {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+
+      .data-value {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+
+      .data-standard {
+        font-size: 12px;
+      }
+
+      .status-panel {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #2A5A9A;
+      }
+
+      .status-grid-top {
+        padding: 12px;
+        gap: 16px;
+      }
+
+      .status-circle {
+        width: 90px !important;
+        height: 90px !important;
+      }
+
+      .status-count {
+        font-size: 32px !important;
+      }
+
+      .status-label {
+        font-size: 13px;
+      }
+
+      .status-grid-bottom {
+        padding: 8px 12px 12px;
+        gap: 10px;
+      }
+
+      .status-grid-bottom .status-circle {
+        width: 70px !important;
+        height: 70px !important;
+      }
+
+      .status-grid-bottom .status-count {
+        font-size: 24px !important;
+      }
+
+      .status-grid-bottom .status-label {
+        font-size: 12px;
+      }
+
+      .month-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .month-btn {
+        padding: 10px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .logo-text {
+        font-size: 14px;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .user-avatar {
+        width: 28px;
+        height: 28px;
+      }
+
+      .logout-btn {
+        font-size: 12px;
+      }
+
+      .sidebar {
+        max-height: 250px;
+      }
+
+      .station-list {
+        grid-template-columns: 1fr;
+      }
+
+      .content-area {
+        padding: 10px;
+      }
+
+      .data-grid {
+        gap: 8px;
+      }
+
+      .data-card {
+        padding: 10px;
+      }
+
+      .data-label {
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      .data-value {
+        font-size: 16px;
+        margin-bottom: 3px;
+      }
+
+      .data-standard {
+        font-size: 11px;
+      }
+
+      .status-grid-top {
+        padding: 10px;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .status-circle {
+        width: 75px !important;
+        height: 75px !important;
+      }
+
+      .status-count {
+        font-size: 26px !important;
+      }
+
+      .status-label {
+        font-size: 12px;
+      }
+
+      .status-grid-bottom {
+        padding: 6px 10px 10px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .status-grid-bottom .status-circle {
+        width: 58px !important;
+        height: 58px !important;
+      }
+
+      .status-grid-bottom .status-count {
+        font-size: 20px !important;
+      }
+
+      .status-grid-bottom .status-label {
+        font-size: 11px;
+      }
+
+      .month-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-top">
       <div class="logo-area">
-        <div class="logo-icon">🌍</div>
+        <div class="logo-icon"><img src="ZHB.jpg" alt="Logo"></div>
         <div class="logo-text">三菱湖环境管理平台</div>
       </div>
       <div class="header-right">
         <div class="user-info">
-          <div class="user-avatar">👤</div>
+          <div class="user-avatar"><img src="ZHB.jpg" alt="Avatar"></div>
           <span>admin</span>
           <button class="logout-btn" onclick="window.location.href='login.html'">退出</button>
         </div>
@@ -614,12 +875,18 @@
       <div class="status-grid-top">
         <div class="status-item">
           <div class="status-circle offline">
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
             <div class="status-count">0</div>
             <div class="status-label">离线</div>
           </div>
         </div>
         <div class="status-item">
           <div class="status-circle normal" id="normalCount">
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
             <div class="status-count">9</div>
             <div class="status-label">正常</div>
           </div>
@@ -630,18 +897,27 @@
       <div class="status-grid-bottom">
         <div class="status-item">
           <div class="status-circle warning" id="warningCount">
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
             <div class="status-count">1</div>
             <div class="status-label">预警</div>
           </div>
         </div>
         <div class="status-item">
           <div class="status-circle exceed">
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
             <div class="status-count">0</div>
             <div class="status-label">超标</div>
           </div>
         </div>
         <div class="status-item">
           <div class="status-circle fault">
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
+            <div class="radar-wave"></div>
             <div class="status-count">0</div>
             <div class="status-label">故障</div>
           </div>
@@ -718,7 +994,7 @@
 
     const dataConfig = {
       '溶解氧': { min: 3, max: 12, unit: 'mg/L' },
-      '化学需氧量': { min: 0, max: 100, unit: 'mg/L' },
+      '化学需氧量': { min: 0, max: 100, unit: 'mg/L', dataMin: 31, dataMax: 38 },
       '氨氮': { min: 0, max: 1, unit: 'mg/L' },
       '总磷': { min: 0, max: 1, unit: 'mg/L' }
     };
@@ -744,7 +1020,7 @@
       stations.forEach((station, index) => {
         stationData[station] = {
           '溶解氧': generateRandomValue(3, 12),
-          '化学需氧量': generateRandomValue(0, 100),
+          '化学需氧量': generateRandomValue(31, 38),
           '氨氮': generateRandomValue(0, 1),
           '总磷': generateRandomValue(0, 1)
         };
@@ -756,13 +1032,40 @@
       const today = now.toDateString();
       
       if (lastWarningUpdate !== today) {
-        const warningCount = Math.floor(Math.random() * 2) + 1;
-        const shuffled = [...stations].sort(() => Math.random() - 0.5);
-        warningStations = shuffled.slice(0, warningCount);
+        warningStations = [];
+        
+        // 检查每个站点是否有数据达到最大值的90%
+        stations.forEach(station => {
+          const data = stationData[station];
+          Object.keys(dataConfig).forEach(key => {
+            const config = dataConfig[key];
+            const value = parseFloat(data[key]);
+            const threshold = config.max * 0.9;
+            
+            if (value >= threshold) {
+              if (!warningStations.includes(station)) {
+                warningStations.push(station);
+              }
+            }
+          });
+        });
+        
+        // 如果预警站点超过2个，只保留前2个
+        if (warningStations.length > 2) {
+          warningStations = warningStations.slice(0, 2);
+        }
+        
+        // 如果没有预警站点，随机选择1-2个（确保每天至少有一些预警显示）
+        if (warningStations.length === 0) {
+          const warningCount = Math.floor(Math.random() * 2) + 1;
+          const shuffled = [...stations].sort(() => Math.random() - 0.5);
+          warningStations = shuffled.slice(0, warningCount);
+        }
+        
         lastWarningUpdate = today;
         
-        document.getElementById('normalCount').querySelector('.status-count').textContent = 10 - warningCount;
-        document.getElementById('warningCount').querySelector('.status-count').textContent = warningCount;
+        document.getElementById('normalCount').querySelector('.status-count').textContent = 10 - warningStations.length;
+        document.getElementById('warningCount').querySelector('.status-count').textContent = warningStations.length;
       }
     }
 
@@ -807,40 +1110,43 @@
 
       const dataGridEl = document.getElementById('dataGrid');
       
-      if (isWarning) {
-        dataGridEl.innerHTML = Object.keys(dataConfig).map(key => `
-          <div class="data-card hidden">
-            <div class="data-label">【${key}】</div>
-            <div class="data-value hidden">数据无法正常显示</div>
-            <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
-          </div>
-        `).join('');
-      } else {
-        dataGridEl.innerHTML = Object.keys(dataConfig).map(key => `
+      dataGridEl.innerHTML = Object.keys(dataConfig).map(key => {
+        const config = dataConfig[key];
+        const value = parseFloat(data[key]);
+        const isWarningValue = value >= config.max * 0.9;
+        
+        return `
           <div class="data-card">
             <div class="data-label">【${key}】</div>
-            <div class="data-value">实时数据: ${data[key]}${dataConfig[key].unit}</div>
+            <div class="data-value" style="color: ${isWarningValue ? '#FFD43B' : '#4ADE80'}">实时数据: ${data[key]}${dataConfig[key].unit}</div>
             <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
           </div>
-        `).join('');
-      }
+        `;
+      }).join('');
     }
 
     function updateAllStationData() {
       stations.forEach(station => {
-        if (!warningStations.includes(station)) {
-          Object.keys(dataConfig).forEach(key => {
-            const config = dataConfig[key];
-            const currentValue = parseFloat(stationData[station][key]);
-            const change = (Math.random() - 0.5) * (config.max - config.min) * 0.1;
-            let newValue = currentValue + change;
-            
-            if (newValue < config.min) newValue = config.min;
-            if (newValue > config.max) newValue = config.max;
-            
-            stationData[station][key] = newValue.toFixed(3);
-          });
-        }
+        Object.keys(dataConfig).forEach(key => {
+          const config = dataConfig[key];
+          const currentValue = parseFloat(stationData[station][key]);
+          
+          // 确定实际数据波动的范围
+          let minVal = config.min;
+          let maxVal = config.max;
+          if (key === '化学需氧量' && config.dataMin !== undefined) {
+            minVal = config.dataMin;
+            maxVal = config.dataMax;
+          }
+          
+          const change = (Math.random() - 0.5) * (maxVal - minVal) * 0.1;
+          let newValue = currentValue + change;
+          
+          if (newValue < minVal) newValue = minVal;
+          if (newValue > maxVal) newValue = maxVal;
+          
+          stationData[station][key] = newValue.toFixed(3);
+        });
       });
       updateDisplay();
     }
@@ -883,38 +1189,41 @@
       if (currentMonthBtn) currentMonthBtn.classList.add('active');
     }
 
+    // 判断某个站点在某个时间是否有数据空缺
+    function hasDataGap(year, month, stationIndex) {
+      if (year < 2024 || (year === 2024 && month < 11)) {
+        return true; // 2024年11月之前无法生成
+      }
+      
+      if ((year === 2024 && month >= 11) || (year >= 2025 && year <= 2026) || (year === 2026 && month <= 4)) {
+        const gapStations = [2, 5, 7, 9]; // 随机挑选4台机子（索引3,6,8,10）
+        return gapStations.includes(stationIndex);
+      }
+      
+      return false; // 2026年5月起所有机子都有数据
+    }
+
     // 生成历史数据
-    function generateHistoricalData(year, month, station, isWarning) {
+    function generateHistoricalData(year, month, station, stationIndex) {
       const data = [];
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
       const currentMonth = currentDate.getMonth() + 1;
       
-      // 如果是预警站点，返回全部为空的数据
-      if (isWarning) {
-        const monthsToGenerate = exportMode === 'month' ? 1 : 12;
-        for (let m = 1; m <= monthsToGenerate; m++) {
-          const targetMonth = exportMode === 'month' ? month : m;
-          data.push({
-            '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
-            '溶解氧': '-',
-            '化学需氧量': '-',
-            '氨氮': '-',
-            '总磷': '-',
-            'pH值': '-'
-          });
-        }
-        return data;
+      // 随机选择1-2个站点有超标数据
+      const exceedStationIndices = [];
+      const exceedCount = Math.floor(Math.random() * 2) + 1;
+      const shuffledIndices = [...Array(10).keys()].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < exceedCount; i++) {
+        exceedStationIndices.push(shuffledIndices[i]);
       }
       
-      // 正常站点，生成数据
       const monthsToGenerate = exportMode === 'month' ? 1 : 12;
       for (let m = 1; m <= monthsToGenerate; m++) {
         const targetMonth = exportMode === 'month' ? month : m;
         const isFutureDate = (year > currentYear) || (year === currentYear && targetMonth > currentMonth);
         
-        if (isFutureDate) {
-          // 未来月份显示为空
+        if (isFutureDate || hasDataGap(year, targetMonth, stationIndex)) {
           data.push({
             '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
             '溶解氧': '-',
@@ -924,13 +1233,37 @@
             'pH值': '-'
           });
         } else {
-          // 过去和当前月份生成随机数据
+          const isExceedStation = exceedStationIndices.includes(stationIndex);
+          const exceedParamIndex = Math.floor(Math.random() * 4); // 随机选择一个参数超标
+          
+          let doVal, codVal, nh3Val, tpVal;
+          
+          if (isExceedStation && exceedParamIndex === 0) {
+            doVal = generateRandomValue(12 * 1.01, 12 * 1.2); // 溶解氧超标
+          } else {
+            doVal = generateRandomValue(3, 12);
+          }
+          
+          codVal = generateRandomValue(31, 38); // 化学需氧量固定在31-38
+          
+          if (isExceedStation && exceedParamIndex === 2) {
+            nh3Val = generateRandomValue(1 * 1.01, 1 * 1.2); // 氨氮超标
+          } else {
+            nh3Val = generateRandomValue(0, 1);
+          }
+          
+          if (isExceedStation && exceedParamIndex === 3) {
+            tpVal = generateRandomValue(1 * 1.01, 1 * 1.2); // 总磷超标
+          } else {
+            tpVal = generateRandomValue(0, 1);
+          }
+          
           data.push({
             '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
-            '溶解氧': generateRandomValue(3, 12),
-            '化学需氧量': generateRandomValue(0, 100),
-            '氨氮': generateRandomValue(0, 1),
-            '总磷': generateRandomValue(0, 1),
+            '溶解氧': doVal,
+            '化学需氧量': codVal,
+            '氨氮': nh3Val,
+            '总磷': tpVal,
             'pH值': '-'
           });
         }
@@ -990,10 +1323,23 @@
     function exportExcel() {
       const year = parseInt(document.getElementById('yearSelect').value);
       const currentStation = stations[currentStationIndex];
-      const isWarning = warningStations.includes(currentStation);
+      
+      // 检查是否可以生成Excel
+      if (year < 2024 || (year === 2024 && selectedMonth < 11)) {
+        alert('2024年11月之前无法生成Excel表！');
+        return;
+      }
+      
+      if ((year === 2024 && selectedMonth >= 11) || (year >= 2025) || (year === 2026 && selectedMonth <= 4)) {
+        const gapStations = [2, 5, 7, 9];
+        if (gapStations.includes(currentStationIndex)) {
+          alert('该站点在此期间无法下载Excel表！');
+          return;
+        }
+      }
       
       // 生成数据
-      const historicalData = generateHistoricalData(year, selectedMonth, currentStation, isWarning);
+      const historicalData = generateHistoricalData(year, selectedMonth, currentStation, currentStationIndex);
       
       // 准备工作表数据
       const wsData = [];
