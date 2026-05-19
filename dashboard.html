@@ -131,6 +131,37 @@
       height: calc(100vh - 110px);
     }
 
+    /* 移动端站点选择下拉框 */
+    .mobile-station-selector {
+      display: none;
+      padding: 12px 16px;
+      background: rgba(42, 90, 154, 0.2);
+      border-bottom: 1px solid #2A5A9A;
+    }
+
+    .mobile-station-selector label {
+      display: block;
+      font-size: 13px;
+      color: #9CC4FF;
+      margin-bottom: 8px;
+    }
+
+    .mobile-station-selector select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(42, 90, 154, 0.3);
+      border: 1px solid #4A90E2;
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .mobile-station-selector select:hover {
+      background: rgba(42, 90, 154, 0.5);
+    }
+
     .sidebar {
       width: 320px;
       border-right: 1px solid #2A5A9A;
@@ -446,6 +477,11 @@
       border: 3px solid #FF9A9A;
     }
 
+    /* 桌面端隐藏移动端网格 */
+    .mobile-status-grid {
+      display: none;
+    }
+
     /* 报表导出模块 */
     .export-section {
       padding: 0 16px 16px 16px;
@@ -590,6 +626,18 @@
 
     /* 移动端适配 */
     @media (max-width: 768px) {
+      .mobile-station-selector {
+        display: block;
+      }
+
+      #mobile-stat-card {
+        display: block !important;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #2A5A9A;
+        padding-bottom: 8px;
+      }
+
       .header-top {
         padding: 10px 16px;
       }
@@ -612,10 +660,7 @@
       }
 
       .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #2A5A9A;
-        max-height: 300px;
+        display: none;
       }
 
       .station-list {
@@ -661,40 +706,51 @@
         border-top: 1px solid #2A5A9A;
       }
 
-      .status-grid-top {
-        padding: 12px;
-        gap: 16px;
-      }
-
-      .status-circle {
-        width: 90px !important;
-        height: 90px !important;
-      }
-
-      .status-count {
-        font-size: 32px !important;
-      }
-
-      .status-label {
-        font-size: 13px;
-      }
-
+      .status-grid-top,
       .status-grid-bottom {
-        padding: 8px 12px 12px;
-        gap: 10px;
+        display: none;
       }
 
-      .status-grid-bottom .status-circle {
-        width: 70px !important;
-        height: 70px !important;
+      /* 移动端5个球横向排列 */
+      .status-panel {
+        padding: 12px;
       }
 
-      .status-grid-bottom .status-count {
-        font-size: 24px !important;
+      /* 移动端状态球容器 */
+      .status-circle-container {
+        background: rgba(42, 90, 154, 0.2);
+        border: 1px solid #2A5A9A;
+        border-radius: 8px;
+        padding: 12px 8px;
+        margin-bottom: 16px;
       }
 
-      .status-grid-bottom .status-label {
-        font-size: 12px;
+      /* 为移动端重新组织5个球 */
+      .mobile-status-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        padding: 0;
+      }
+
+      .mobile-status-grid .status-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .mobile-status-grid .status-circle {
+        width: 52px !important;
+        height: 52px !important;
+      }
+
+      .mobile-status-grid .status-count {
+        font-size: 20px !important;
+      }
+
+      .mobile-status-grid .status-label {
+        font-size: 11px !important;
+        margin-top: 4px;
       }
 
       .month-grid {
@@ -824,6 +880,36 @@
     </div>
   </div>
 
+  <!-- 移动端站点统计 -->
+  <div class="sidebar" id="mobile-stat-card" style="display: none;">
+    <div class="panel-title">监测站点统计</div>
+    <div class="stat-card">
+      <table class="stat-table">
+        <thead>
+          <tr>
+            <th>序号</th>
+            <th>站点类型</th>
+            <th>数量</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>水环境监测</td>
+            <td>10</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 移动端站点选择下拉框 -->
+  <div class="mobile-station-selector">
+    <label>选择监测站点</label>
+    <select id="mobileStationSelect" onchange="handleMobileStationChange(this)">
+    </select>
+  </div>
+
   <div class="main-container">
     <div class="sidebar">
       <div class="panel-title">监测站点统计</div>
@@ -871,7 +957,7 @@
     <div class="status-panel">
       <div class="panel-title">站点实时状态 (30s刷新一次)</div>
       
-      <!-- 上方2个状态模块 -->
+      <!-- 桌面端：上方2个下方3个 -->
       <div class="status-grid-top">
         <div class="status-item">
           <div class="status-circle offline">
@@ -893,7 +979,6 @@
         </div>
       </div>
       
-      <!-- 下方3个状态模块 -->
       <div class="status-grid-bottom">
         <div class="status-item">
           <div class="status-circle warning" id="warningCount">
@@ -920,6 +1005,57 @@
             <div class="radar-wave"></div>
             <div class="status-count">0</div>
             <div class="status-label">故障</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 移动端：5个球横向排列 -->
+      <div class="status-circle-container">
+        <div class="mobile-status-grid">
+          <div class="status-item">
+            <div class="status-circle normal" id="normalCountMobile">
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="status-count">9</div>
+              <div class="status-label">正常</div>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-circle warning" id="warningCountMobile">
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="status-count">1</div>
+              <div class="status-label">预警</div>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-circle offline">
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="status-count">0</div>
+              <div class="status-label">离线</div>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-circle exceed">
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="status-count">0</div>
+              <div class="status-label">超标</div>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-circle fault">
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="radar-wave"></div>
+              <div class="status-count">0</div>
+              <div class="status-label">故障</div>
+            </div>
           </div>
         </div>
       </div>
@@ -974,8 +1110,8 @@
   </div>
 
   <div class="footer">
-    Copyright ©2024 武汉奥恒盛科技
-  </div>
+        Copyright ©2021 武汉奥恒盛科技
+      </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
@@ -1057,16 +1193,43 @@
         
         // 如果没有预警站点，随机选择1-2个（确保每天至少有一些预警显示）
         if (warningStations.length === 0) {
-          const warningCount = Math.floor(Math.random() * 2) + 1;
+          const randomWarningCount = Math.floor(Math.random() * 2) + 1;
           const shuffled = [...stations].sort(() => Math.random() - 0.5);
-          warningStations = shuffled.slice(0, warningCount);
+          warningStations = shuffled.slice(0, randomWarningCount);
         }
         
         lastWarningUpdate = today;
         
-        document.getElementById('normalCount').querySelector('.status-count').textContent = 10 - warningStations.length;
-        document.getElementById('warningCount').querySelector('.status-count').textContent = warningStations.length;
+        const warningCount = warningStations.length;
+        const normalCount = 10 - warningCount;
+        document.getElementById('normalCount').querySelector('.status-count').textContent = normalCount;
+        document.getElementById('warningCount').querySelector('.status-count').textContent = warningCount;
+        
+        // 同步移动端状态
+        const normalCountMobile = document.getElementById('normalCountMobile');
+        const warningCountMobile = document.getElementById('warningCountMobile');
+        if (normalCountMobile) {
+          normalCountMobile.querySelector('.status-count').textContent = normalCount;
+        }
+        if (warningCountMobile) {
+          warningCountMobile.querySelector('.status-count').textContent = warningCount;
+        }
       }
+    }
+
+    // 初始化移动端下拉选择器
+    function initMobileStationSelect() {
+      const selectEl = document.getElementById('mobileStationSelect');
+      selectEl.innerHTML = stations.map((station, index) => {
+        return `<option value="${index}">${station}</option>`;
+      }).join('');
+      selectEl.value = currentStationIndex;
+    }
+
+    // 处理移动端站点选择变化
+    function handleMobileStationChange(selectEl) {
+      currentStationIndex = parseInt(selectEl.value);
+      updateDisplay();
     }
 
     function renderStationList() {
@@ -1086,6 +1249,11 @@
           currentStationIndex = parseInt(item.dataset.index);
           updateDisplay();
           renderStationList();
+          // 同时更新移动端下拉选择器
+          const mobileSelect = document.getElementById('mobileStationSelect');
+          if (mobileSelect) {
+            mobileSelect.value = currentStationIndex;
+          }
         });
       });
     }
@@ -1191,8 +1359,12 @@
 
     // 判断某个站点在某个时间是否有数据空缺
     function hasDataGap(year, month, stationIndex) {
-      if (year < 2024 || (year === 2024 && month < 11)) {
-        return true; // 2024年11月之前无法生成
+      // 2026年5月17号及之前无法正常生成
+      const cutoffDate = new Date(2026, 4, 17); // 5月17号（月份从0开始）
+      const targetDate = new Date(year, month - 1, 1); // 目标月份的第一天
+      
+      if (targetDate <= cutoffDate) {
+        return true;
       }
       
       if ((year === 2024 && month >= 11) || (year >= 2025 && year <= 2026) || (year === 2026 && month <= 4)) {
@@ -1200,7 +1372,7 @@
         return gapStations.includes(stationIndex);
       }
       
-      return false; // 2026年5月起所有机子都有数据
+      return false; // 2026年5月18号起所有机子都有数据
     }
 
     // 生成历史数据
@@ -1323,10 +1495,12 @@
     function exportExcel() {
       const year = parseInt(document.getElementById('yearSelect').value);
       const currentStation = stations[currentStationIndex];
+      const cutoffDate = new Date(2026, 4, 17); // 5月17号（月份从0开始）
+      const targetDate = new Date(year, selectedMonth - 1, 1); // 目标月份的第一天
       
       // 检查是否可以生成Excel
-      if (year < 2024 || (year === 2024 && selectedMonth < 11)) {
-        alert('2024年11月之前无法生成Excel表！');
+      if (targetDate <= cutoffDate) {
+        alert('2026年5月17号及之前无法生成Excel表！');
         return;
       }
       
@@ -1421,6 +1595,7 @@
     updateDisplay();
     initializeYearSelector();
     initializeMonthSelector();
+    initMobileStationSelect();
 
     setInterval(updateAllStationData, 86400000);
     setInterval(updateWarningStations, 86400000);
