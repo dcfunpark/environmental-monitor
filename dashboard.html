@@ -1359,11 +1359,13 @@
 
     // 判断某个站点在某个时间是否有数据空缺
     function hasDataGap(year, month, stationIndex) {
-      // 2026年5月17号及之前无法正常生成
-      const cutoffDate = new Date(2026, 4, 17); // 5月17号（月份从0开始）
+      const today = new Date();
+      const earliestDate = new Date(2024, 10, 1); // 2024年11月1号（月份从0开始）
+      const latestDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2); // 今天往前推2天
       const targetDate = new Date(year, month - 1, 1); // 目标月份的第一天
       
-      if (targetDate <= cutoffDate) {
+      // 如果目标日期早于最早日期（2024年11月），或者晚于最晚日期（今天往前推2天），则有数据空缺
+      if (targetDate < earliestDate || targetDate > latestDate) {
         return true;
       }
       
@@ -1372,7 +1374,7 @@
         return gapStations.includes(stationIndex);
       }
       
-      return false; // 2026年5月18号起所有机子都有数据
+      return false; // 在允许范围内且不在数据空缺站点中的，正常生成数据
     }
 
     // 生成历史数据
@@ -1495,12 +1497,19 @@
     function exportExcel() {
       const year = parseInt(document.getElementById('yearSelect').value);
       const currentStation = stations[currentStationIndex];
-      const cutoffDate = new Date(2026, 4, 17); // 5月17号（月份从0开始）
+      const today = new Date();
+      const earliestDate = new Date(2024, 10, 1); // 2024年11月1号（月份从0开始）
+      const latestDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2); // 今天往前推2天
       const targetDate = new Date(year, selectedMonth - 1, 1); // 目标月份的第一天
       
+      // 格式化日期显示
+      const formatDate = (date) => {
+        return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}号`;
+      };
+      
       // 检查是否可以生成Excel
-      if (targetDate <= cutoffDate) {
-        alert('2026年5月17号及之前无法生成Excel表！');
+      if (targetDate < earliestDate || targetDate > latestDate) {
+        alert(`只能导出${formatDate(earliestDate)}至${formatDate(latestDate)}之间的数据！`);
         return;
       }
       
