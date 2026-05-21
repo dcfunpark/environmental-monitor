@@ -960,7 +960,7 @@
       <!-- 桌面端：上方2个下方3个 -->
       <div class="status-grid-top">
         <div class="status-item">
-          <div class="status-circle offline">
+          <div class="status-circle offline" id="offlineCount">
             <div class="radar-wave"></div>
             <div class="radar-wave"></div>
             <div class="radar-wave"></div>
@@ -1031,7 +1031,7 @@
             </div>
           </div>
           <div class="status-item">
-            <div class="status-circle offline">
+            <div class="status-circle offline" id="offlineCountMobile">
               <div class="radar-wave"></div>
               <div class="radar-wave"></div>
               <div class="radar-wave"></div>
@@ -1135,6 +1135,9 @@
       '总磷': { min: 0, max: 1, unit: 'mg/L' }
     };
 
+    // 离线站点：第十台机子（索引9）始终离线，再随机选择0-1个额外的离线站点
+    const offlineStations = [9];
+    
     let currentStationIndex = 0;
     let stationData = {};
     let warningStations = [];
@@ -1172,6 +1175,10 @@
         
         // 检查每个站点是否有数据达到最大值的90%
         stations.forEach(station => {
+          const stationIndex = stations.indexOf(station);
+          // 跳过离线站点（只有10号机离线）
+          if (offlineStations.includes(stationIndex)) return;
+          
           const data = stationData[station];
           Object.keys(dataConfig).forEach(key => {
             const config = dataConfig[key];
@@ -1193,21 +1200,37 @@
         
         // 如果没有预警站点，随机选择1-2个（确保每天至少有一些预警显示）
         if (warningStations.length === 0) {
-          const randomWarningCount = Math.floor(Math.random() * 2) + 1;
-          const shuffled = [...stations].sort(() => Math.random() - 0.5);
+          const randomWarningCount = Math.floor(Math.random() * 2) + 1; // 1或2
+          // 从非离线站点中随机选择（只有1-9号机）
+          const availableStations = stations.filter((s, i) => !offlineStations.includes(i));
+          const shuffled = [...availableStations].sort(() => Math.random() - 0.5);
           warningStations = shuffled.slice(0, randomWarningCount);
         }
         
         lastWarningUpdate = today;
         
+        // 离线数量：永远只有1台（10号机）
+        const offlineCount = 1;
+        
+        // 预警数量：1-2台
         const warningCount = warningStations.length;
-        const normalCount = 10 - warningCount;
+        
+        // 正常数量：总共10 - 1离线 - 1~2预警 = 7~8台
+        const normalCount = 10 - offlineCount - warningCount;
+        
+        // 更新状态显示
+        document.getElementById('offlineCount').querySelector('.status-count').textContent = offlineCount;
         document.getElementById('normalCount').querySelector('.status-count').textContent = normalCount;
         document.getElementById('warningCount').querySelector('.status-count').textContent = warningCount;
         
         // 同步移动端状态
+        const offlineCountMobile = document.getElementById('offlineCountMobile');
         const normalCountMobile = document.getElementById('normalCountMobile');
         const warningCountMobile = document.getElementById('warningCountMobile');
+        
+        if (offlineCountMobile) {
+          offlineCountMobile.querySelector('.status-count').textContent = offlineCount;
+        }
         if (normalCountMobile) {
           normalCountMobile.querySelector('.status-count').textContent = normalCount;
         }
@@ -1260,7 +1283,7 @@
 
     function updateDisplay() {
       const currentStation = stations[currentStationIndex];
-      const data = stationData[currentStation];
+      const isOffline = offlineStations.includes(currentStationIndex);
       const isWarning = warningStations.includes(currentStation);
       
       const now = new Date();
@@ -1278,19 +1301,31 @@
 
       const dataGridEl = document.getElementById('dataGrid');
       
-      dataGridEl.innerHTML = Object.keys(dataConfig).map(key => {
-        const config = dataConfig[key];
-        const value = parseFloat(data[key]);
-        const isWarningValue = value >= config.max * 0.9;
-        
-        return `
-          <div class="data-card">
-            <div class="data-label">【${key}】</div>
-            <div class="data-value" style="color: ${isWarningValue ? '#FFD43B' : '#4ADE80'}">实时数据: ${data[key]}${dataConfig[key].unit}</div>
-            <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
+      if (isOffline) {
+        // 离线站点显示离线信息
+        dataGridEl.innerHTML = `
+          <div class="data-card" style="grid-column: 1 / -1;">
+            <div class="data-label">【设备状态】</div>
+            <div class="data-value" style="color: #9CA3AF">设备离线</div>
+            <div class="data-standard">暂无数据</div>
           </div>
         `;
-      }).join('');
+      } else {
+        const data = stationData[currentStation];
+        dataGridEl.innerHTML = Object.keys(dataConfig).map(key => {
+          const config = dataConfig[key];
+          const value = parseFloat(data[key]);
+          const isWarningValue = value >= config.max * 0.9;
+          
+          return `
+            <div class="data-card">
+              <div class="data-label">【${key}】</div>
+              <div class="data-value" style="color: ${isWarningValue ? '#FFD43B' : '#4ADE80'}">实时数据: ${data[key]}${dataConfig[key].unit}</div>
+              <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     function updateAllStationData() {
@@ -1359,6 +1394,11 @@
 
     // 判断某个站点在某个时间是否有数据空缺
     function hasDataGap(year, month, stationIndex) {
+      // 检查是否是离线站点
+      if (offlineStations.includes(stationIndex)) {
+        return true;
+      }
+      
       const today = new Date();
       const earliestDate = new Date(2024, 10, 1); // 2024年11月1号（月份从0开始）
       const latestDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2); // 今天往前推2天
@@ -1370,7 +1410,7 @@
       }
       
       if ((year === 2024 && month >= 11) || (year >= 2025 && year <= 2026) || (year === 2026 && month <= 4)) {
-        const gapStations = [2, 5, 7, 9]; // 随机挑选4台机子（索引3,6,8,10）
+        const gapStations = [2, 5, 7]; // 随机挑选3台机子（移除9号，因为已经设为离线）
         return gapStations.includes(stationIndex);
       }
       
@@ -1392,14 +1432,13 @@
         exceedStationIndices.push(shuffledIndices[i]);
       }
       
-      const monthsToGenerate = exportMode === 'month' ? 1 : 12;
-      for (let m = 1; m <= monthsToGenerate; m++) {
-        const targetMonth = exportMode === 'month' ? month : m;
-        const isFutureDate = (year > currentYear) || (year === currentYear && targetMonth > currentMonth);
+      if (exportMode === 'month') {
+        // 月度模式：只返回一条月度记录，但包含该月的数据用于计算统计值
+        const isFutureDate = (year > currentYear) || (year === currentYear && month > currentMonth);
         
-        if (isFutureDate || hasDataGap(year, targetMonth, stationIndex)) {
+        if (isFutureDate || hasDataGap(year, month, stationIndex)) {
           data.push({
-            '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
+            '时间': `${year}-${String(month).padStart(2, '0')}`,
             '溶解氧': '-',
             '化学需氧量': '-',
             '氨氮': '-',
@@ -1408,38 +1447,88 @@
           });
         } else {
           const isExceedStation = exceedStationIndices.includes(stationIndex);
-          const exceedParamIndex = Math.floor(Math.random() * 4); // 随机选择一个参数超标
+          const exceedParamIndex = Math.floor(Math.random() * 4);
           
           let doVal, codVal, nh3Val, tpVal;
           
           if (isExceedStation && exceedParamIndex === 0) {
-            doVal = generateRandomValue(12 * 1.01, 12 * 1.2); // 溶解氧超标
+            doVal = generateRandomValue(12 * 1.01, 12 * 1.2);
           } else {
             doVal = generateRandomValue(3, 12);
           }
           
-          codVal = generateRandomValue(31, 38); // 化学需氧量固定在31-38
+          codVal = generateRandomValue(31, 38);
           
           if (isExceedStation && exceedParamIndex === 2) {
-            nh3Val = generateRandomValue(1 * 1.01, 1 * 1.2); // 氨氮超标
+            nh3Val = generateRandomValue(1 * 1.01, 1 * 1.2);
           } else {
             nh3Val = generateRandomValue(0, 1);
           }
           
           if (isExceedStation && exceedParamIndex === 3) {
-            tpVal = generateRandomValue(1 * 1.01, 1 * 1.2); // 总磷超标
+            tpVal = generateRandomValue(1 * 1.01, 1 * 1.2);
           } else {
             tpVal = generateRandomValue(0, 1);
           }
           
           data.push({
-            '时间': `${year}-${String(targetMonth).padStart(2, '0')}`,
+            '时间': `${year}-${String(month).padStart(2, '0')}`,
             '溶解氧': doVal,
             '化学需氧量': codVal,
             '氨氮': nh3Val,
             '总磷': tpVal,
             'pH值': '-'
           });
+        }
+      } else {
+        // 年度模式：按月份生成
+        for (let m = 1; m <= 12; m++) {
+          const isFutureDate = (year > currentYear) || (year === currentYear && m > currentMonth);
+          
+          if (isFutureDate || hasDataGap(year, m, stationIndex)) {
+            data.push({
+              '时间': `${year}-${String(m).padStart(2, '0')}`,
+              '溶解氧': '-',
+              '化学需氧量': '-',
+              '氨氮': '-',
+              '总磷': '-',
+              'pH值': '-'
+            });
+          } else {
+            const isExceedStation = exceedStationIndices.includes(stationIndex);
+            const exceedParamIndex = Math.floor(Math.random() * 4);
+            
+            let doVal, codVal, nh3Val, tpVal;
+            
+            if (isExceedStation && exceedParamIndex === 0) {
+              doVal = generateRandomValue(12 * 1.01, 12 * 1.2);
+            } else {
+              doVal = generateRandomValue(3, 12);
+            }
+            
+            codVal = generateRandomValue(31, 38);
+            
+            if (isExceedStation && exceedParamIndex === 2) {
+              nh3Val = generateRandomValue(1 * 1.01, 1 * 1.2);
+            } else {
+              nh3Val = generateRandomValue(0, 1);
+            }
+            
+            if (isExceedStation && exceedParamIndex === 3) {
+              tpVal = generateRandomValue(1 * 1.01, 1 * 1.2);
+            } else {
+              tpVal = generateRandomValue(0, 1);
+            }
+            
+            data.push({
+              '时间': `${year}-${String(m).padStart(2, '0')}`,
+              '溶解氧': doVal,
+              '化学需氧量': codVal,
+              '氨氮': nh3Val,
+              '总磷': tpVal,
+              'pH值': '-'
+            });
+          }
         }
       }
       
@@ -1452,42 +1541,108 @@
         max: { '溶解氧': 0, '化学需氧量': 0, '氨氮': 0, '总磷': 0 },
         min: { '溶解氧': Infinity, '化学需氧量': Infinity, '氨氮': Infinity, '总磷': Infinity },
         total: { '溶解氧': 0, '化学需氧量': 0, '氨氮': 0, '总磷': 0 },
+        avg: { '溶解氧': 0, '化学需氧量': 0, '氨氮': 0, '总磷': 0 },
         count: 0
       };
       
-      data.forEach(row => {
-        if (row['溶解氧'] !== '-') {
-          stats.count++;
+      if (exportMode === 'month' && data.length > 0 && data[0]['溶解氧'] !== '-') {
+        // 月度模式：直接生成最大值、最小值和月均值
+        Object.keys(stats.max).forEach(key => {
+          let minVal, maxVal, avgVal;
+          
+          if (key === '化学需氧量') {
+            minVal = Math.floor(Math.random() * 6) + 31; // 31-36
+            maxVal = minVal + Math.floor(Math.random() * 3) + 1; // min+1 to min+3
+            avgVal = Math.round((minVal + maxVal) / 2 * 100) / 100;
+          } else if (key === '溶解氧') {
+            minVal = 3 + Math.random() * 6; // 3-9
+            maxVal = minVal + 1 + Math.random() * 2; // min+1 to min+3
+            avgVal = Math.round((minVal + maxVal) / 2 * 10000) / 10000;
+            minVal = Math.round(minVal * 10000) / 10000;
+            maxVal = Math.round(maxVal * 10000) / 10000;
+          } else if (key === '总磷') {
+            minVal = Math.random() * 0.6; // 0-0.6
+            maxVal = minVal + 0.1 + Math.random() * 0.3; // min+0.1 to min+0.4
+            avgVal = Math.round((minVal + maxVal) / 2 * 1000) / 1000;
+            minVal = Math.round(minVal * 1000) / 1000;
+            maxVal = Math.round(maxVal * 1000) / 1000;
+          } else if (key === '氨氮') {
+            minVal = Math.random() * 0.6; // 0-0.6
+            maxVal = minVal + 0.1 + Math.random() * 0.3; // min+0.1 to min+0.4
+            avgVal = Math.round((minVal + maxVal) / 2 * 10000) / 10000;
+            minVal = Math.round(minVal * 10000) / 10000;
+            maxVal = Math.round(maxVal * 10000) / 10000;
+          }
+          
+          stats.min[key] = minVal;
+          stats.max[key] = maxVal;
+          stats.avg[key] = avgVal;
+          stats.total[key] = avgVal; // 总量也设为平均值
+        });
+        stats.count = 1;
+      } else {
+        // 年度模式：按原逻辑计算
+        data.forEach(row => {
+          if (row['溶解氧'] !== '-') {
+            stats.count++;
+            Object.keys(stats.max).forEach(key => {
+              const val = parseFloat(row[key]);
+              if (!isNaN(val)) {
+                if (val > stats.max[key]) stats.max[key] = val;
+                if (val < stats.min[key]) stats.min[key] = val;
+                stats.total[key] += val;
+              }
+            });
+          }
+        });
+        
+        // 计算平均值
+        if (stats.count > 0) {
+          Object.keys(stats.avg).forEach(key => {
+            stats.avg[key] = stats.total[key] / stats.count;
+          });
+        }
+        
+        // 格式化数字，匹配示例中的精度，并确保最大值大于最小值
+        if (stats.count > 0) {
           Object.keys(stats.max).forEach(key => {
-            const val = parseFloat(row[key]);
-            if (!isNaN(val)) {
-              if (val > stats.max[key]) stats.max[key] = val;
-              if (val < stats.min[key]) stats.min[key] = val;
-              stats.total[key] += val;
+            // 确保最大值大于最小值
+            if (stats.max[key] <= stats.min[key]) {
+              // 根据不同参数类型添加增量
+              if (key === '化学需氧量') {
+                stats.max[key] = stats.min[key] + 2;
+              } else if (key === '总磷') {
+                stats.max[key] = stats.min[key] + 0.1;
+              } else if (key === '氨氮') {
+                stats.max[key] = stats.min[key] + 0.1;
+              } else {
+                stats.max[key] = stats.min[key] + 0.5;
+              }
+            }
+            
+            // 确保平均值在最大值和最小值之间
+            if (stats.avg[key] <= stats.min[key] || stats.avg[key] >= stats.max[key]) {
+              stats.avg[key] = (stats.min[key] + stats.max[key]) / 2;
+            }
+            
+            if (key === '化学需氧量') {
+              stats.max[key] = Math.round(stats.max[key]);
+              stats.min[key] = Math.round(stats.min[key]);
+              stats.avg[key] = Math.round(stats.avg[key] * 100) / 100;
+              stats.total[key] = Math.round(stats.total[key] * 10000) / 10000;
+            } else if (key === '总磷') {
+              stats.max[key] = Math.round(stats.max[key] * 1000) / 1000;
+              stats.min[key] = Math.round(stats.min[key] * 1000) / 1000;
+              stats.avg[key] = Math.round(stats.avg[key] * 1000) / 1000;
+              stats.total[key] = Math.round(stats.total[key] * 1000) / 1000;
+            } else {
+              stats.max[key] = Math.round(stats.max[key] * 10000) / 10000;
+              stats.min[key] = Math.round(stats.min[key] * 10000) / 10000;
+              stats.avg[key] = Math.round(stats.avg[key] * 10000) / 10000;
+              stats.total[key] = Math.round(stats.total[key] * 10000) / 10000;
             }
           });
         }
-      });
-      
-      // 格式化数字，匹配示例中的精度
-      if (stats.count > 0) {
-        Object.keys(stats.max).forEach(key => {
-          if (key === '化学需氧量') {
-            // 化学需氧量是整数或少量小数
-            stats.max[key] = Math.round(stats.max[key]);
-            stats.min[key] = Math.round(stats.min[key]);
-            stats.total[key] = Math.round(stats.total[key] * 10000) / 10000;
-          } else if (key === '总磷') {
-            // 总磷通常小数位较少
-            stats.max[key] = Math.round(stats.max[key] * 1000) / 1000;
-            stats.min[key] = Math.round(stats.min[key] * 1000) / 1000;
-            stats.total[key] = Math.round(stats.total[key] * 1000) / 1000;
-          } else {
-            stats.max[key] = Math.round(stats.max[key] * 10000) / 10000;
-            stats.min[key] = Math.round(stats.min[key] * 10000) / 10000;
-            stats.total[key] = Math.round(stats.total[key] * 10000) / 10000;
-          }
-        });
       }
       
       return stats;
@@ -1502,6 +1657,12 @@
       const latestDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2); // 今天往前推2天
       const targetDate = new Date(year, selectedMonth - 1, 1); // 目标月份的第一天
       
+      // 检查是否是离线站点
+      if (offlineStations.includes(currentStationIndex)) {
+        alert('该站点离线，无法下载Excel表！');
+        return;
+      }
+      
       // 格式化日期显示
       const formatDate = (date) => {
         return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}号`;
@@ -1514,7 +1675,7 @@
       }
       
       if ((year === 2024 && selectedMonth >= 11) || (year >= 2025) || (year === 2026 && selectedMonth <= 4)) {
-        const gapStations = [2, 5, 7, 9];
+        const gapStations = [2, 5, 7]; // 移除索引9，因为9号站点已经被设为离线站点
         if (gapStations.includes(currentStationIndex)) {
           alert('该站点在此期间无法下载Excel表！');
           return;
@@ -1542,24 +1703,30 @@
       // 表头4：第二行 - 单位
       wsData.push(['', '实测(mg/L)', '实测(mg/L)', '实测(mg/L)', '实测(mg/L)', '无量纲']);
       
-      // 数据行
-      historicalData.forEach(row => {
-        wsData.push([
-          row['时间'],
-          row['溶解氧'],
-          row['化学需氧量'],
-          row['氨氮'],
-          row['总磷'],
-          row['pH值']
-        ]);
-      });
-      
       // 统计行
       const stats = calculateStats(historicalData);
       if (stats.count > 0) {
-        wsData.push(['最大值', stats.max['溶解氧'], stats.max['化学需氧量'], stats.max['氨氮'], stats.max['总磷'], '-']);
-        wsData.push(['最小值', stats.min['溶解氧'], stats.min['化学需氧量'], stats.min['氨氮'], stats.min['总磷'], '-']);
-        wsData.push(['总量', stats.total['溶解氧'], stats.total['化学需氧量'], stats.total['氨氮'], stats.total['总磷'], '-']);
+        if (exportMode === 'month') {
+          // 月度模式：只有最大值、最小值、月均值，没有单日数据
+          wsData.push(['最大值', stats.max['溶解氧'], stats.max['化学需氧量'], stats.max['氨氮'], stats.max['总磷'], '-']);
+          wsData.push(['最小值', stats.min['溶解氧'], stats.min['化学需氧量'], stats.min['氨氮'], stats.min['总磷'], '-']);
+          wsData.push(['月均值', stats.avg['溶解氧'], stats.avg['化学需氧量'], stats.avg['氨氮'], stats.avg['总磷'], '-']);
+        } else {
+          // 年度模式：保留月份数据和统计
+          historicalData.forEach(row => {
+            wsData.push([
+              row['时间'],
+              row['溶解氧'],
+              row['化学需氧量'],
+              row['氨氮'],
+              row['总磷'],
+              row['pH值']
+            ]);
+          });
+          wsData.push(['最大值', stats.max['溶解氧'], stats.max['化学需氧量'], stats.max['氨氮'], stats.max['总磷'], '-']);
+          wsData.push(['最小值', stats.min['溶解氧'], stats.min['化学需氧量'], stats.min['氨氮'], stats.min['总磷'], '-']);
+          wsData.push(['总量', stats.total['溶解氧'], stats.total['化学需氧量'], stats.total['氨氮'], stats.total['总磷'], '-']);
+        }
       }
       
       // 创建工作簿
