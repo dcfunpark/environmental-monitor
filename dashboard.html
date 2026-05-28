@@ -955,7 +955,7 @@
     </div>
 
     <div class="status-panel">
-      <div class="panel-title">站点实时状态 (30s刷新一次)</div>
+      <div class="panel-title">站点实时状态</div>
       
       <!-- 桌面端：上方2个下方3个 -->
       <div class="status-grid-top">
@@ -964,7 +964,7 @@
             <div class="radar-wave"></div>
             <div class="radar-wave"></div>
             <div class="radar-wave"></div>
-            <div class="status-count">0</div>
+            <div class="status-count">1</div>
             <div class="status-label">离线</div>
           </div>
         </div>
@@ -973,7 +973,7 @@
             <div class="radar-wave"></div>
             <div class="radar-wave"></div>
             <div class="radar-wave"></div>
-            <div class="status-count">9</div>
+            <div class="status-count">8</div>
             <div class="status-label">正常</div>
           </div>
         </div>
@@ -1017,7 +1017,7 @@
               <div class="radar-wave"></div>
               <div class="radar-wave"></div>
               <div class="radar-wave"></div>
-              <div class="status-count">9</div>
+              <div class="status-count">8</div>
               <div class="status-label">正常</div>
             </div>
           </div>
@@ -1035,7 +1035,7 @@
               <div class="radar-wave"></div>
               <div class="radar-wave"></div>
               <div class="radar-wave"></div>
-              <div class="status-count">0</div>
+              <div class="status-count">1</div>
               <div class="status-label">离线</div>
             </div>
           </div>
@@ -1129,15 +1129,16 @@
     ];
 
     const dataConfig = {
-      '溶解氧': { min: 3, max: 12, unit: 'mg/L' },
-      '化学需氧量': { min: 0, max: 100, unit: 'mg/L', dataMin: 31, dataMax: 38 },
-      '氨氮': { min: 0, max: 1, unit: 'mg/L' },
-      '总磷': { min: 0, max: 1, unit: 'mg/L' }
+      '溶解氧': { min: 3, max: 5, unit: 'mg/L', dataMin: 3, dataMax: 6, warningMin: 5, warningMax: 6 },
+      '化学需氧量': { min: 25, max: 35, unit: 'mg/L', dataMin: 28, dataMax: 35, warningMin: 30, warningMax: 35 },
+      '氨氮': { min: 0, max: 2, unit: 'mg/L', dataMin: 1.2, dataMax: 1.8, warningMin: 1.8, warningMax: 2.0 },
+      '总磷': { min: 0, max: 0.5, unit: 'mg/L', dataMin: 0.23, dataMax: 0.5, warningMin: 0.36, warningMax: 0.5 }
     };
 
     // 离线站点：第十台机子（索引9）始终离线，再随机选择0-1个额外的离线站点
     const offlineStations = [9];
     
+    // 当前站点索引，避免选中离线的10号机（索引9）
     let currentStationIndex = 0;
     let stationData = {};
     let warningStations = [];
@@ -1156,95 +1157,102 @@
     }
 
     function initializeStationData() {
+      // 初始化所有数据到正常范围
       stations.forEach((station, index) => {
+        if (offlineStations.includes(index)) {
+          // 离线站点不设置数据
+          return;
+        }
         stationData[station] = {
-          '溶解氧': generateRandomValue(3, 12),
-          '化学需氧量': generateRandomValue(31, 38),
-          '氨氮': generateRandomValue(0, 1),
-          '总磷': generateRandomValue(0, 1)
+          '溶解氧': generateRandomValue(dataConfig['溶解氧'].dataMin, dataConfig['溶解氧'].warningMin - 0.1),
+          '化学需氧量': generateRandomValue(dataConfig['化学需氧量'].dataMin, dataConfig['化学需氧量'].warningMin - 0.1),
+          '氨氮': generateRandomValue(dataConfig['氨氮'].dataMin, dataConfig['氨氮'].warningMin - 0.1),
+          '总磷': generateRandomValue(dataConfig['总磷'].dataMin, dataConfig['总磷'].warningMin - 0.1)
         };
+      });
+    }
+    
+    function setupWarningStations() {
+      warningStations = [];
+      
+      // 第一步：把所有非离线的机子重置为正常状态
+      stations.forEach((station, index) => {
+        if (!offlineStations.includes(index)) {
+          // 所有数据都设为正常范围
+          Object.keys(dataConfig).forEach(key => {
+            const config = dataConfig[key];
+            stationData[station][key] = generateRandomValue(config.dataMin, config.warningMin - 0.01);
+          });
+        }
+      });
+      
+      // 第二步：随机选择1～2台机子作为预警站点（从非离线、非5号机中选择）
+      const availableStations = stations.filter((s, i) => !offlineStations.includes(i) && i !== 4);
+      const shuffled = [...availableStations].sort(() => Math.random() - 0.5);
+      const randomWarningCount = Math.floor(Math.random() * 2) + 1; // 1或2台
+      warningStations = shuffled.slice(0, randomWarningCount);
+      
+      // 第三步：为每台预警机子设置1～2个预警数据
+      warningStations.forEach(station => {
+        const paramCount = Math.floor(Math.random() * 2) + 1; // 1或2个参数预警
+        const params = Object.keys(dataConfig);
+        const shuffledParams = [...params].sort(() => Math.random() - 0.5);
+        const warningParams = shuffledParams.slice(0, paramCount);
+        
+        warningParams.forEach(key => {
+          const config = dataConfig[key];
+          // 设置为预警范围内的值
+          stationData[station][key] = generateRandomValue(config.warningMin, config.warningMax);
+        });
       });
     }
 
     function updateWarningStations() {
-      const now = new Date();
-      const today = now.toDateString();
+      // 每次调用都重新设置预警站点和预警数据（用于演示）
+      setupWarningStations();
       
-      if (lastWarningUpdate !== today) {
-        warningStations = [];
-        
-        // 检查每个站点是否有数据达到最大值的90%
-        stations.forEach(station => {
-          const stationIndex = stations.indexOf(station);
-          // 跳过离线站点（只有10号机离线）
-          if (offlineStations.includes(stationIndex)) return;
-          
-          const data = stationData[station];
-          Object.keys(dataConfig).forEach(key => {
-            const config = dataConfig[key];
-            const value = parseFloat(data[key]);
-            const threshold = config.max * 0.9;
-            
-            if (value >= threshold) {
-              if (!warningStations.includes(station)) {
-                warningStations.push(station);
-              }
-            }
-          });
-        });
-        
-        // 如果预警站点超过2个，只保留前2个
-        if (warningStations.length > 2) {
-          warningStations = warningStations.slice(0, 2);
-        }
-        
-        // 如果没有预警站点，随机选择1-2个（确保每天至少有一些预警显示）
-        if (warningStations.length === 0) {
-          const randomWarningCount = Math.floor(Math.random() * 2) + 1; // 1或2
-          // 从非离线站点中随机选择（只有1-9号机）
-          const availableStations = stations.filter((s, i) => !offlineStations.includes(i));
-          const shuffled = [...availableStations].sort(() => Math.random() - 0.5);
-          warningStations = shuffled.slice(0, randomWarningCount);
-        }
-        
-        lastWarningUpdate = today;
-        
-        // 离线数量：永远只有1台（10号机）
-        const offlineCount = 1;
-        
-        // 预警数量：1-2台
-        const warningCount = warningStations.length;
-        
-        // 正常数量：总共10 - 1离线 - 1~2预警 = 7~8台
-        const normalCount = 10 - offlineCount - warningCount;
-        
-        // 更新状态显示
-        document.getElementById('offlineCount').querySelector('.status-count').textContent = offlineCount;
-        document.getElementById('normalCount').querySelector('.status-count').textContent = normalCount;
-        document.getElementById('warningCount').querySelector('.status-count').textContent = warningCount;
-        
-        // 同步移动端状态
-        const offlineCountMobile = document.getElementById('offlineCountMobile');
-        const normalCountMobile = document.getElementById('normalCountMobile');
-        const warningCountMobile = document.getElementById('warningCountMobile');
-        
-        if (offlineCountMobile) {
-          offlineCountMobile.querySelector('.status-count').textContent = offlineCount;
-        }
-        if (normalCountMobile) {
-          normalCountMobile.querySelector('.status-count').textContent = normalCount;
-        }
-        if (warningCountMobile) {
-          warningCountMobile.querySelector('.status-count').textContent = warningCount;
-        }
+      const now = new Date();
+      lastWarningUpdate = now.toDateString();
+      
+      // 离线数量：永远只有1台（10号机）
+      const offlineCount = 1;
+      
+      // 预警数量：直接使用设置的预警站点数量（1-2台）
+      const warningCount = warningStations.length;
+      
+      // 正常数量：总共10 - 1离线 - 预警数量
+      const normalCount = 10 - offlineCount - warningCount;
+      
+      // 更新状态显示
+      document.getElementById('offlineCount').querySelector('.status-count').textContent = offlineCount;
+      document.getElementById('normalCount').querySelector('.status-count').textContent = normalCount;
+      document.getElementById('warningCount').querySelector('.status-count').textContent = warningCount;
+      
+      // 同步移动端状态
+      const offlineCountMobile = document.getElementById('offlineCountMobile');
+      const normalCountMobile = document.getElementById('normalCountMobile');
+      const warningCountMobile = document.getElementById('warningCountMobile');
+      
+      if (offlineCountMobile) {
+        offlineCountMobile.querySelector('.status-count').textContent = offlineCount;
       }
+      if (normalCountMobile) {
+        normalCountMobile.querySelector('.status-count').textContent = normalCount;
+      }
+      if (warningCountMobile) {
+        warningCountMobile.querySelector('.status-count').textContent = warningCount;
+      }
+      
+      // 刷新当前显示
+      updateDisplay();
     }
 
     // 初始化移动端下拉选择器
     function initMobileStationSelect() {
       const selectEl = document.getElementById('mobileStationSelect');
       selectEl.innerHTML = stations.map((station, index) => {
-        return `<option value="${index}">${station}</option>`;
+        const isOffline = offlineStations.includes(index);
+        return `<option value="${index}" ${isOffline ? 'disabled' : ''}>${station}${isOffline ? ' (离线)' : ''}</option>`;
       }).join('');
       selectEl.value = currentStationIndex;
     }
@@ -1259,25 +1267,35 @@
       const stationListEl = document.getElementById('stationList');
       stationListEl.innerHTML = stations.map((station, index) => {
         const isActive = index === currentStationIndex;
+        const isOffline = offlineStations.includes(index);
         return `
-          <div class="station-item ${isActive ? 'active' : ''}" data-index="${index}">
-            <span class="station-icon">🏢</span>
-            <span class="station-name">${station}</span>
+          <div class="station-item ${isActive ? 'active' : ''} ${isOffline ? 'offline' : ''}" data-index="${index}">
+            <span class="station-icon">${isOffline ? '❌' : '🏢'}</span>
+            <span class="station-name">${station}${isOffline ? ' (离线)' : ''}</span>
           </div>
         `;
       }).join('');
 
       stationListEl.querySelectorAll('.station-item').forEach(item => {
-        item.addEventListener('click', () => {
-          currentStationIndex = parseInt(item.dataset.index);
-          updateDisplay();
-          renderStationList();
-          // 同时更新移动端下拉选择器
-          const mobileSelect = document.getElementById('mobileStationSelect');
-          if (mobileSelect) {
-            mobileSelect.value = currentStationIndex;
-          }
-        });
+        const index = parseInt(item.dataset.index);
+        const isOffline = offlineStations.includes(index);
+        
+        if (!isOffline) {
+          item.addEventListener('click', () => {
+            currentStationIndex = index;
+            updateDisplay();
+            renderStationList();
+            // 同时更新移动端下拉选择器
+            const mobileSelect = document.getElementById('mobileStationSelect');
+            if (mobileSelect) {
+              mobileSelect.value = currentStationIndex;
+            }
+          });
+        } else {
+          // 离线站点点击不可选
+          item.style.cursor = 'not-allowed';
+          item.style.opacity = '0.6';
+        }
       });
     }
 
@@ -1315,7 +1333,7 @@
         dataGridEl.innerHTML = Object.keys(dataConfig).map(key => {
           const config = dataConfig[key];
           const value = parseFloat(data[key]);
-          const isWarningValue = value >= config.max * 0.9;
+          const isWarningValue = value >= config.warningMin && value <= config.warningMax;
           
           return `
             <div class="data-card">
@@ -1330,16 +1348,24 @@
 
     function updateAllStationData() {
       stations.forEach(station => {
+        const stationIndex = stations.indexOf(station);
+        const isWarningStation = warningStations.includes(station);
+        
         Object.keys(dataConfig).forEach(key => {
           const config = dataConfig[key];
           const currentValue = parseFloat(stationData[station][key]);
           
-          // 确定实际数据波动的范围
-          let minVal = config.min;
-          let maxVal = config.max;
-          if (key === '化学需氧量' && config.dataMin !== undefined) {
+          // 确定数据波动的范围
+          let minVal, maxVal;
+          
+          if (isWarningStation && stationData[station][key] >= config.warningMin && stationData[station][key] <= config.warningMax) {
+            // 如果是预警站点且这个数据在预警范围内，保持在预警范围内波动
+            minVal = config.warningMin;
+            maxVal = config.warningMax;
+          } else {
+            // 否则在正常数据范围内波动
             minVal = config.dataMin;
-            maxVal = config.dataMax;
+            maxVal = config.warningMin - 0.1; // 略低于预警范围
           }
           
           const change = (Math.random() - 0.5) * (maxVal - minVal) * 0.1;
@@ -1348,7 +1374,14 @@
           if (newValue < minVal) newValue = minVal;
           if (newValue > maxVal) newValue = maxVal;
           
-          stationData[station][key] = newValue.toFixed(3);
+          // 根据不同参数调整小数位数
+          if (key === '化学需氧量') {
+            stationData[station][key] = Math.round(newValue * 100) / 100; // 2位小数
+          } else if (key === '总磷') {
+            stationData[station][key] = Math.round(newValue * 1000) / 1000; // 3位小数
+          } else {
+            stationData[station][key] = Math.round(newValue * 10000) / 10000; // 4位小数
+          }
         });
       });
       updateDisplay();
@@ -1409,10 +1442,7 @@
         return true;
       }
       
-      if ((year === 2024 && month >= 11) || (year >= 2025 && year <= 2026) || (year === 2026 && month <= 4)) {
-        const gapStations = [2, 5, 7]; // 随机挑选3台机子（移除9号，因为已经设为离线）
-        return gapStations.includes(stationIndex);
-      }
+      // 移除了3、6、8号机的数据空缺限制，现在所有非离线站点都能正常导出数据
       
       return false; // 在允许范围内且不在数据空缺站点中的，正常生成数据
     }
@@ -1446,30 +1476,11 @@
             'pH值': '-'
           });
         } else {
-          const isExceedStation = exceedStationIndices.includes(stationIndex);
-          const exceedParamIndex = Math.floor(Math.random() * 4);
-          
-          let doVal, codVal, nh3Val, tpVal;
-          
-          if (isExceedStation && exceedParamIndex === 0) {
-            doVal = generateRandomValue(12 * 1.01, 12 * 1.2);
-          } else {
-            doVal = generateRandomValue(3, 12);
-          }
-          
-          codVal = generateRandomValue(31, 38);
-          
-          if (isExceedStation && exceedParamIndex === 2) {
-            nh3Val = generateRandomValue(1 * 1.01, 1 * 1.2);
-          } else {
-            nh3Val = generateRandomValue(0, 1);
-          }
-          
-          if (isExceedStation && exceedParamIndex === 3) {
-            tpVal = generateRandomValue(1 * 1.01, 1 * 1.2);
-          } else {
-            tpVal = generateRandomValue(0, 1);
-          }
+          // 使用新的数据范围
+          const doVal = generateRandomValue(dataConfig['溶解氧'].dataMin, dataConfig['溶解氧'].dataMax);
+          const codVal = generateRandomValue(dataConfig['化学需氧量'].dataMin, dataConfig['化学需氧量'].dataMax);
+          const nh3Val = generateRandomValue(dataConfig['氨氮'].dataMin, dataConfig['氨氮'].dataMax);
+          const tpVal = generateRandomValue(dataConfig['总磷'].dataMin, dataConfig['总磷'].dataMax);
           
           data.push({
             '时间': `${year}-${String(month).padStart(2, '0')}`,
@@ -1495,30 +1506,11 @@
               'pH值': '-'
             });
           } else {
-            const isExceedStation = exceedStationIndices.includes(stationIndex);
-            const exceedParamIndex = Math.floor(Math.random() * 4);
-            
-            let doVal, codVal, nh3Val, tpVal;
-            
-            if (isExceedStation && exceedParamIndex === 0) {
-              doVal = generateRandomValue(12 * 1.01, 12 * 1.2);
-            } else {
-              doVal = generateRandomValue(3, 12);
-            }
-            
-            codVal = generateRandomValue(31, 38);
-            
-            if (isExceedStation && exceedParamIndex === 2) {
-              nh3Val = generateRandomValue(1 * 1.01, 1 * 1.2);
-            } else {
-              nh3Val = generateRandomValue(0, 1);
-            }
-            
-            if (isExceedStation && exceedParamIndex === 3) {
-              tpVal = generateRandomValue(1 * 1.01, 1 * 1.2);
-            } else {
-              tpVal = generateRandomValue(0, 1);
-            }
+            // 使用新的数据范围
+            const doVal = generateRandomValue(dataConfig['溶解氧'].dataMin, dataConfig['溶解氧'].dataMax);
+            const codVal = generateRandomValue(dataConfig['化学需氧量'].dataMin, dataConfig['化学需氧量'].dataMax);
+            const nh3Val = generateRandomValue(dataConfig['氨氮'].dataMin, dataConfig['氨氮'].dataMax);
+            const tpVal = generateRandomValue(dataConfig['总磷'].dataMin, dataConfig['总磷'].dataMax);
             
             data.push({
               '时间': `${year}-${String(m).padStart(2, '0')}`,
@@ -1548,27 +1540,32 @@
       if (exportMode === 'month' && data.length > 0 && data[0]['溶解氧'] !== '-') {
         // 月度模式：直接生成最大值、最小值和月均值
         Object.keys(stats.max).forEach(key => {
+          const config = dataConfig[key];
           let minVal, maxVal, avgVal;
           
           if (key === '化学需氧量') {
-            minVal = Math.floor(Math.random() * 6) + 31; // 31-36
-            maxVal = minVal + Math.floor(Math.random() * 3) + 1; // min+1 to min+3
+            minVal = Math.floor(Math.random() * 5) + 28; // 28-32
+            maxVal = minVal + Math.floor(Math.random() * 4) + 1; // min+1 to min+4
+            if (maxVal > 35) maxVal = 35;
             avgVal = Math.round((minVal + maxVal) / 2 * 100) / 100;
           } else if (key === '溶解氧') {
-            minVal = 3 + Math.random() * 6; // 3-9
-            maxVal = minVal + 1 + Math.random() * 2; // min+1 to min+3
+            minVal = 3 + Math.random() * 2; // 3-5
+            maxVal = minVal + Math.random() * 1.5; // min to min+1.5
+            if (maxVal > 6) maxVal = 6;
             avgVal = Math.round((minVal + maxVal) / 2 * 10000) / 10000;
             minVal = Math.round(minVal * 10000) / 10000;
             maxVal = Math.round(maxVal * 10000) / 10000;
           } else if (key === '总磷') {
-            minVal = Math.random() * 0.6; // 0-0.6
-            maxVal = minVal + 0.1 + Math.random() * 0.3; // min+0.1 to min+0.4
+            minVal = 0.23 + Math.random() * 0.1; // 0.23-0.33
+            maxVal = minVal + 0.08 + Math.random() * 0.1; // min+0.08 to min+0.18
+            if (maxVal > 0.5) maxVal = 0.5;
             avgVal = Math.round((minVal + maxVal) / 2 * 1000) / 1000;
             minVal = Math.round(minVal * 1000) / 1000;
             maxVal = Math.round(maxVal * 1000) / 1000;
           } else if (key === '氨氮') {
-            minVal = Math.random() * 0.6; // 0-0.6
+            minVal = 1.2 + Math.random() * 0.4; // 1.2-1.6
             maxVal = minVal + 0.1 + Math.random() * 0.3; // min+0.1 to min+0.4
+            if (maxVal > 2.0) maxVal = 2.0;
             avgVal = Math.round((minVal + maxVal) / 2 * 10000) / 10000;
             minVal = Math.round(minVal * 10000) / 10000;
             maxVal = Math.round(maxVal * 10000) / 10000;
@@ -1674,14 +1671,6 @@
         return;
       }
       
-      if ((year === 2024 && selectedMonth >= 11) || (year >= 2025) || (year === 2026 && selectedMonth <= 4)) {
-        const gapStations = [2, 5, 7]; // 移除索引9，因为9号站点已经被设为离线站点
-        if (gapStations.includes(currentStationIndex)) {
-          alert('该站点在此期间无法下载Excel表！');
-          return;
-        }
-      }
-      
       // 生成数据
       const historicalData = generateHistoricalData(year, selectedMonth, currentStation, currentStationIndex);
       
@@ -1766,15 +1755,32 @@
     }
 
     initializeStationData();
-    updateWarningStations();
+    // 手动设置一次预警站点（不检查日期）
+    setupWarningStations();
+    const now = new Date();
+    lastWarningUpdate = now.toDateString();
+    
+    // 确保当前选中的站点不是离线的
+    if (offlineStations.includes(currentStationIndex)) {
+      // 找到第一个可用的站点
+      for (let i = 0; i < stations.length; i++) {
+        if (!offlineStations.includes(i)) {
+          currentStationIndex = i;
+          break;
+        }
+      }
+    }
+    
     renderStationList();
+    // 立即更新站点实时状态
+    updateWarningStations();
     updateDisplay();
     initializeYearSelector();
     initializeMonthSelector();
     initMobileStationSelect();
 
     setInterval(updateAllStationData, 86400000);
-    setInterval(updateWarningStations, 86400000);
+    setInterval(updateWarningStations, 30000); // 30秒更新一次预警，方便测试
   </script>
 </body>
 </html>
