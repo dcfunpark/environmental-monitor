@@ -1129,10 +1129,10 @@
     ];
 
     const dataConfig = {
-      '溶解氧': { min: 3, max: 5, unit: 'mg/L', dataMin: 3, dataMax: 6, warningMin: 5, warningMax: 6 },
-      '化学需氧量': { min: 25, max: 35, unit: 'mg/L', dataMin: 28, dataMax: 35, warningMin: 30, warningMax: 35 },
-      '氨氮': { min: 0, max: 2, unit: 'mg/L', dataMin: 1.2, dataMax: 1.8, warningMin: 1.8, warningMax: 2.0 },
-      '总磷': { min: 0, max: 0.5, unit: 'mg/L', dataMin: 0.23, dataMax: 0.5, warningMin: 0.36, warningMax: 0.5 }
+      '溶解氧': { min: 3, max: 5, unit: 'mg/L', dataMin: 2.8, dataMax: 5, warningMin: 2.8, warningMax: 3, warningType: 'low' },
+      '化学需氧量': { min: 25, max: 35, unit: 'mg/L', dataMin: 28, dataMax: 35, warningMin: 30, warningMax: 35, warningType: 'high' },
+      '氨氮': { min: 0, max: 2, unit: 'mg/L', dataMin: 1.2, dataMax: 1.8, warningMin: 1.8, warningMax: 2.0, warningType: 'high' },
+      '总磷': { min: 0.085, max: 0.12, unit: 'mg/L', dataMin: 0.085, dataMax: 0.15, warningMin: 0.12, warningMax: 0.15, warningType: 'high' }
     };
 
     // 离线站点：第十台机子（索引9）始终离线，再随机选择0-1个额外的离线站点
@@ -1181,7 +1181,13 @@
           // 所有数据都设为正常范围
           Object.keys(dataConfig).forEach(key => {
             const config = dataConfig[key];
-            stationData[station][key] = generateRandomValue(config.dataMin, config.warningMin - 0.01);
+            if (config.warningType === 'low') {
+              // 溶解氧：正常范围是略高于3
+              stationData[station][key] = generateRandomValue(config.warningMax + 0.01, config.dataMax);
+            } else {
+              // 其他参数：正常范围是略低于预警值
+              stationData[station][key] = generateRandomValue(config.dataMin, config.warningMin - 0.01);
+            }
           });
         }
       });
@@ -1333,13 +1339,30 @@
         dataGridEl.innerHTML = Object.keys(dataConfig).map(key => {
           const config = dataConfig[key];
           const value = parseFloat(data[key]);
-          const isWarningValue = value >= config.warningMin && value <= config.warningMax;
+          
+          // 判断是否预警
+          let isWarningValue = false;
+          if (config.warningType === 'low') {
+            // 溶解氧：低于等于warningMax（3）时预警
+            isWarningValue = value <= config.warningMax;
+          } else {
+            // 其他参数：高于等于warningMin时预警
+            isWarningValue = value >= config.warningMin && value <= config.warningMax;
+          }
+          
+          // 显示排放标准
+          let standardDisplay = '';
+          if (key === '溶解氧') {
+            standardDisplay = `${config.max} - ${config.min}`;
+          } else {
+            standardDisplay = `${config.min} - ${config.max}`;
+          }
           
           return `
             <div class="data-card">
               <div class="data-label">【${key}】</div>
               <div class="data-value" style="color: ${isWarningValue ? '#FFD43B' : '#4ADE80'}">实时数据: ${data[key]}${dataConfig[key].unit}</div>
-              <div class="data-standard">排放标准: ${dataConfig[key].min} - ${dataConfig[key].max}</div>
+              <div class="data-standard">排放标准: ${standardDisplay}</div>
             </div>
           `;
         }).join('');
@@ -1358,14 +1381,26 @@
           // 确定数据波动的范围
           let minVal, maxVal;
           
-          if (isWarningStation && stationData[station][key] >= config.warningMin && stationData[station][key] <= config.warningMax) {
+          let isInWarningRange = false;
+          if (config.warningType === 'low') {
+            isInWarningRange = stationData[station][key] <= config.warningMax;
+          } else {
+            isInWarningRange = stationData[station][key] >= config.warningMin && stationData[station][key] <= config.warningMax;
+          }
+          
+          if (isWarningStation && isInWarningRange) {
             // 如果是预警站点且这个数据在预警范围内，保持在预警范围内波动
             minVal = config.warningMin;
             maxVal = config.warningMax;
           } else {
             // 否则在正常数据范围内波动
-            minVal = config.dataMin;
-            maxVal = config.warningMin - 0.1; // 略低于预警范围
+            if (config.warningType === 'low') {
+              minVal = config.warningMax + 0.01; // 略高于预警范围
+              maxVal = config.dataMax;
+            } else {
+              minVal = config.dataMin;
+              maxVal = config.warningMin - 0.01; // 略低于预警范围
+            }
           }
           
           const change = (Math.random() - 0.5) * (maxVal - minVal) * 0.1;
@@ -1375,13 +1410,13 @@
           if (newValue > maxVal) newValue = maxVal;
           
           // 根据不同参数调整小数位数
-          if (key === '化学需氧量') {
-            stationData[station][key] = Math.round(newValue * 100) / 100; // 2位小数
-          } else if (key === '总磷') {
-            stationData[station][key] = Math.round(newValue * 1000) / 1000; // 3位小数
-          } else {
-            stationData[station][key] = Math.round(newValue * 10000) / 10000; // 4位小数
-          }
+            if (key === '化学需氧量') {
+              stationData[station][key] = Math.round(newValue * 100) / 100; // 2位小数
+            } else if (key === '总磷') {
+              stationData[station][key] = Math.round(newValue * 1000) / 1000; // 3位小数
+            } else {
+              stationData[station][key] = Math.round(newValue * 10000) / 10000; // 4位小数
+            }
         });
       });
       updateDisplay();
@@ -1556,9 +1591,9 @@
             minVal = Math.round(minVal * 10000) / 10000;
             maxVal = Math.round(maxVal * 10000) / 10000;
           } else if (key === '总磷') {
-            minVal = 0.23 + Math.random() * 0.1; // 0.23-0.33
-            maxVal = minVal + 0.08 + Math.random() * 0.1; // min+0.08 to min+0.18
-            if (maxVal > 0.5) maxVal = 0.5;
+            minVal = 0.085 + Math.random() * 0.02; // 0.085-0.105
+            maxVal = minVal + 0.01 + Math.random() * 0.03; // min+0.01 to min+0.04
+            if (maxVal > 0.15) maxVal = 0.15;
             avgVal = Math.round((minVal + maxVal) / 2 * 1000) / 1000;
             minVal = Math.round(minVal * 1000) / 1000;
             maxVal = Math.round(maxVal * 1000) / 1000;
@@ -1609,7 +1644,7 @@
               if (key === '化学需氧量') {
                 stats.max[key] = stats.min[key] + 2;
               } else if (key === '总磷') {
-                stats.max[key] = stats.min[key] + 0.1;
+                stats.max[key] = stats.min[key] + 0.02;
               } else if (key === '氨氮') {
                 stats.max[key] = stats.min[key] + 0.1;
               } else {
@@ -1780,7 +1815,7 @@
     initMobileStationSelect();
 
     setInterval(updateAllStationData, 86400000);
-    setInterval(updateWarningStations, 30000); // 30秒更新一次预警，方便测试
+      setInterval(updateWarningStations, 86400000);
   </script>
 </body>
 </html>
